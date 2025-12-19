@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Vibe Konek | Next-Gen Connection</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,600;12..96,800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/YOUR_USERNAME/REPO_NAME@main/styles.css" />
+</head>
+
+<body class="antialiased glass-noise">
+
+    <div id="connectingOverlay" class="fixed inset-0 z-[200] bg-vibe-black flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-700 overflow-hidden">
+        <div class="absolute inset-0 mesh-bg opacity-30"></div>
+        
+        <div class="relative w-80 h-80 mb-16 flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full border-2 border-white/5 animate-spin-slow"></div>
+            <div class="absolute inset-0 rounded-full border-t-2 border-vibe-yellow/30 animate-spin-slow"></div>
+            
+            <div class="absolute inset-8 rounded-full border border-vibe-cyan/20 animate-spin-reverse"></div>
+            <div class="absolute inset-8 rounded-full border-b-2 border-vibe-cyan/40 animate-spin-reverse"></div>
+            
+            <div class="absolute inset-16 rounded-full border border-white/5"></div>
+            <div class="absolute inset-24 rounded-full border border-white/5"></div>
+            
+            <div class="absolute inset-0 rounded-full radar-sweep animate-radar"></div>
+            
+            <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+                <i class="fa-solid fa-bolt text-vibe-yellow text-6xl animate-pulse filter drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]"></i>
+                <span class="text-[9px] font-black text-vibe-yellow tracking-[0.4em] uppercase mt-4">Active</span>
+            </div>
+
+            <div class="absolute top-10 left-20 w-1.5 h-1.5 bg-vibe-cyan rounded-full animate-pulse shadow-[0_0_10px_#22D3EE]"></div>
+            <div class="absolute bottom-20 right-10 w-1.5 h-1.5 bg-vibe-yellow rounded-full animate-pulse shadow-[0_0_10px_#FACC15]" style="animation-delay: 1.2s"></div>
+            <div class="absolute top-40 left-5 w-1 h-1 bg-white rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
+        </div>
+
+        <div class="relative z-20 text-center">
+            <h2 class="font-display text-4xl md:text-6xl font-extrabold text-white tracking-tighter uppercase mb-4 leading-none">
+                Searching <br/> <span class="text-vibe-yellow shimmer-liquid">Mesh Layer</span>
+            </h2>
+            
+            <div class="flex flex-col items-center gap-2 mb-10">
+                <div class="flex items-center gap-3">
+                    <span id="loadingStatusText" class="text-[11px] font-black text-vibe-cyan uppercase tracking-[0.6em]">Initializing Node</span>
+                    <div class="flex gap-1.5">
+                        <div class="w-1.5 h-1.5 rounded-full bg-vibe-cyan animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-vibe-cyan animate-bounce" style="animation-delay: 0.1s"></div>
+                        <div class="w-1.5 h-1.5 rounded-full bg-vibe-cyan animate-bounce" style="animation-delay: 0.2s"></div>
+                    </div>
+                </div>
+                <p id="technicalLog" class="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Handshaking WebRTC Port 5001...</p>
+            </div>
+
+            <button onclick="cancelConnection()" class="px-12 py-5 glass-hyper rounded-full text-[10px] font-black uppercase tracking-[0.5em] text-white/40 hover:text-vibe-pink hover:border-vibe-pink/50 transition-all active:scale-95 group">
+                <i class="fa-solid fa-power-off mr-3 group-hover:rotate-90 transition-transform"></i>
+                Abort Protocol
+            </button>
+        </div>
+        
+        <div class="absolute bottom-10 left-0 right-0 px-20 flex justify-between opacity-10 pointer-events-none">
+            <div class="font-mono text-[8px] space-y-1">
+                <p>LATENCY: 12ms</p>
+                <p>NODES: 14,882</p>
+                <p>PKT_LOSS: 0.00%</p>
+            </div>
+            <div class="font-mono text-[8px] space-y-1 text-right">
+                <p>AES_256_ACTIVE</p>
+                <p>WEBRTC_STABLE</p>
+                <p>GENESIS_SYNC</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="liquid-canvas">
+        <div class="blob-unit w-[600px] h-[600px] bg-vibe-yellow top-[-10%] left-[-15%] animate-liquid-blob"></div>
+        <div class="blob-unit w-[500px] h-[500px] bg-vibe-cyan top-[30%] right-[-10%] animate-liquid-blob" style="animation-delay: -5s;"></div>
+        <div class="blob-unit w-[450px] h-[450px] bg-vibe-purple bottom-[10%] left-[20%] animate-liquid-blob" style="animation-delay: -10s;"></div>
+    </div>
+
+    <header id="mainHeader" class="fixed top-8 left-8 z-50 transition-opacity duration-500 ease-in-out">
+        <div class="logo-container group cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+            <i class="fa-solid fa-bolt text-vibe-yellow text-2xl filter drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"></i>
+            <span class="font-display font-extrabold text-xl tracking-tighter uppercase text-white">
+                Vibe <span class="text-vibe-yellow">Konek</span>
+            </span>
+        </div>
+    </header>
+
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})" class="fixed bottom-8 right-8 z-[70] w-14 h-14 glass-hyper rounded-full flex items-center justify-center text-vibe-yellow text-xl opacity-0 pointer-events-none translate-y-10 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-xl border border-white/20">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <div id="modalOverlay" class="fixed inset-0 z-[100] flex items-center justify-center p-6 opacity-0 pointer-events-none transition-all duration-500 modal-liquid-bg" onclick="handleOverlayClick(event)">
+        <div class="modal-box w-full max-w-2xl glass-hyper rounded-[3rem] overflow-hidden flex flex-col transform scale-90 transition-all duration-500">
+            <div class="p-8 border-b border-white/10 flex items-center justify-between">
+                <div class="flex items-center gap-5">
+                    <button id="modalBackBtn" class="hidden w-12 h-12 rounded-full bg-white/5 items-center justify-center hover:bg-white/10 transition-colors text-white mr-2 active:scale-90">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div class="w-14 h-14 bg-vibe-yellow/20 rounded-2xl flex items-center justify-center border border-vibe-yellow/30">
+                        <i id="modalIcon" class="fa-solid fa-bolt text-vibe-yellow text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 id="modalTitle" class="font-display text-3xl font-extrabold uppercase tracking-tight text-white">Title</h3>
+                        <p id="modalSubtitle" class="text-[10px] text-vibe-yellow uppercase tracking-widest mt-1 font-black">Protocol Intelligence</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white active:scale-90">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="modalBody" class="p-10 md:p-12 overflow-y-auto text-readable-body text-lg leading-relaxed max-h-[70vh]"></div>
+        </div>
+    </div>
+
+    <main class="relative pt-48 pb-16 px-6 max-w-6xl mx-auto flex flex-col items-center">
+        <div class="text-center w-full max-w-5xl mb-24 flex flex-col items-center">
+            <h1 class="font-display text-6xl sm:text-7xl md:text-[120px] font-extrabold tracking-tighter leading-[0.8] mb-12 shimmer-liquid">
+                KONEK <br/>
+                IN A <span class="text-vibe-yellow">FLASH.</span>
+            </h1>
+            <p class="text-readable-body text-xl sm:text-2xl md:text-4xl font-light leading-snug px-4 max-w-4xl">
+                Sync with the speed of <span class="text-vibe-yellow font-bold italic">Vibe.</span> Hyper-fast, anonymous, and unfiltered. <span class="text-white font-medium">No accounts, no noise.</span> Just real connection on a global layer.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 w-full max-w-6xl mb-24">
+            <div class="md:col-span-8 md:row-span-2 glass-hyper rounded-[4rem] p-10 md:p-16 flex flex-col justify-between overflow-hidden relative group min-h-[500px] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-vibe-yellow/40">
+                <div class="relative z-10">
+                    <div class="flex items-center gap-4 mb-10">
+                        <i class="fa-solid fa-bolt-lightning text-vibe-yellow text-3xl animate-pulse"></i>
+                        <span class="text-xs font-black uppercase tracking-[0.5em] text-vibe-yellow">Live Node Sync</span>
+                    </div>
+                    <h2 class="font-display text-5xl md:text-8xl font-extrabold tracking-tighter mb-8 text-white leading-tight">Enter the <br/>Vibe</h2>
+                    <p class="text-readable-body text-xl md:text-2xl leading-relaxed max-w-md font-light">Instantly pair with the world. Your identity stays yours, your data vanishes on exit.</p>
+                </div>
+                
+                <div class="flex flex-col md:flex-row gap-5 mt-14 relative z-10 w-full">
+                    <button onclick="openSetup('chat')" class="btn-liquid flex-1 px-4 py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all min-w-0">
+                        <i class="fa-solid fa-comments text-2xl"></i>
+                        <span class="truncate">Chat</span>
+                    </button>
+                    <button onclick="openSetup('audio')" class="bg-vibe-cyan text-vibe-black flex-1 px-4 py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all min-w-0">
+                        <i class="fa-solid fa-microphone text-2xl"></i>
+                        <span class="truncate">Audio</span>
+                    </button>
+                    <button onclick="openSetup('video')" class="bg-white text-black flex-1 px-4 py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all min-w-0">
+                        <i class="fa-solid fa-video text-2xl"></i>
+                        <span class="truncate">Video</span>
+                    </button>
+                </div>
+                
+                <i class="fa-solid fa-bolt absolute -bottom-32 -right-32 text-[400px] md:text-[550px] text-white/[0.03] group-hover:text-vibe-yellow/[0.07] transition-all duration-1000 rotate-[15deg]"></i>
+            </div>
+
+            <div class="md:col-span-4 glass-hyper rounded-[3.5rem] p-10 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] hover:border-vibe-cyan/40">
+                <div class="w-16 h-16 rounded-2xl bg-vibe-cyan/20 border border-vibe-cyan/30 flex items-center justify-center text-vibe-cyan text-3xl">
+                    <i class="fa-solid fa-fingerprint"></i>
+                </div>
+                <div class="mt-12">
+                    <h3 class="font-display font-extrabold text-3xl mb-3 text-white">Stealth Mode</h3>
+                    <p class="text-readable-muted text-base leading-relaxed">Hardware-isolated anonymity. No trace, no tracking left behind.</p>
+                </div>
+            </div>
+
+            <div class="md:col-span-4 glass-hyper rounded-[3.5rem] p-10 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] hover:border-vibe-purple/40">
+                <div class="w-16 h-16 rounded-2xl bg-vibe-purple/20 border border-vibe-purple/30 flex items-center justify-center text-vibe-purple text-3xl">
+                    <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <div class="mt-12">
+                    <h3 class="font-display font-extrabold text-3xl mb-3 text-white">Edge Sync</h3>
+                    <p class="text-readable-muted text-base leading-relaxed">Ultra-low latency pairing powered by next-gen global nodes.</p>
+                </div>
+            </div>
+
+            <div class="md:col-span-12 glass-hyper rounded-[4rem] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-12 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-white/20">
+                <div class="flex flex-col sm:flex-row items-center gap-12 md:gap-24">
+                    <div class="group text-center sm:text-left">
+                        <span class="block text-5xl md:text-6xl font-display font-black text-vibe-yellow group-hover:scale-110 transition-transform">9M+</span>
+                        <span class="text-[11px] uppercase tracking-[0.5em] text-white/50 font-black mt-3">Daily Vibes</span>
+                    </div>
+                    <div class="h-16 w-px bg-white/10 hidden sm:block"></div>
+                    <div class="text-center sm:text-left">
+                        <span class="block text-5xl md:text-6xl font-display font-black text-vibe-cyan">182</span>
+                        <span class="text-[11px] uppercase tracking-[0.5em] text-white/50 font-black mt-3">Country Nodes</span>
+                    </div>
+                </div>
+                <div class="flex -space-x-5">
+                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-vibe-cyan flex items-center justify-center text-sm font-black">V1</div>
+                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-vibe-yellow flex items-center justify-center text-sm font-black">V2</div>
+                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-white flex items-center justify-center text-sm font-black">+99</div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="w-full border-t border-white/10 pt-16 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="flex flex-col gap-4 text-center md:text-left">
+                <span class="font-display font-bold text-2xl tracking-tighter text-white">VIBE <span class="text-vibe-yellow">KONEK</span></span>
+                <p class="text-readable-muted text-xs uppercase tracking-[0.2em]">Decentralized Connection Protocol</p>
+            </div>
+            <div class="flex gap-8 text-[11px] font-bold text-white/40 uppercase tracking-widest">
+                <a href="#" onclick="showPrivacyPolicy()" class="hover:text-vibe-yellow transition-colors">Privacy Node</a>
+                <a href="#" onclick="showTerms()" class="hover:text-vibe-yellow transition-colors">Terms of Sync</a>
+                <a href="#" class="hover:text-vibe-yellow transition-colors">Status</a>
+            </div>
+        </footer>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/gh/YOUR_USERNAME/REPO_NAME@main/script.js"></script>
+
+</body>
+</html>
