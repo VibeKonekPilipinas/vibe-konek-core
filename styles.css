@@ -1,0 +1,140 @@
+/* --- Vibe Konek Custom Styles --- */
+
+/* Base Settings */
+body {
+    background-color: #030408;
+    color: #F8FAFC;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Glass Noise Texture */
+.glass-noise::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Liquid Background Canvas */
+.liquid-canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    filter: blur(120px);
+    opacity: 0.4;
+}
+
+.blob-unit {
+    position: absolute;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+}
+
+/* Glass Hyper (Cards & Elements) */
+.glass-hyper {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-hyper:hover {
+    border-color: rgba(250, 204, 21, 0.4);
+    transform: translateY(-8px) scale(1.01);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.glass-hyper-static {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Logo Styles */
+.logo-container {
+    background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 100px;
+    padding: 10px 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.4s ease;
+    position: relative;
+}
+
+.logo-container:hover {
+    transform: scale(1.03);
+    border-color: rgba(250, 204, 21, 0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Text Shimmer Effect */
+.shimmer-liquid {
+    background: linear-gradient(135deg, #FACC15 0%, #FFFFFF 40%, #22D3EE 60%, #FACC15 100%);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 6s linear infinite;
+}
+
+/* Liquid Button */
+.btn-liquid {
+    position: relative;
+    background: #FACC15;
+    color: #000;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    font-weight: 800;
+}
+
+.btn-liquid:hover {
+    transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.modal-liquid-bg {
+    background: rgba(1, 2, 4, 0.9);
+    backdrop-filter: blur(40px);
+}
+
+/* Text Utilities */
+.text-readable-title { color: #FFFFFF; }
+.text-readable-body { color: #E2E8F0; } 
+.text-readable-muted { color: #CBD5E1; } 
+
+/* Scrollbar & Inputs */
+.no-scroll { overflow: hidden; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: rgba(250, 204, 21, 0.5); border-radius: 20px; }
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #FACC15 !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Loading Screen Specifics */
+.radar-sweep {
+    background: conic-gradient(from 0deg, rgba(250, 204, 21, 0.4) 0%, transparent 50%);
+}
+.mesh-bg {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+.loading-ring {
+    border: 2px solid transparent;
+    border-top-color: rgba(250, 204, 21, 0.5);
+    border-bottom-color: rgba(34, 211, 238, 0.5);
+}
+[cite_start]``` [cite: 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
