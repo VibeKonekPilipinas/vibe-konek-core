@@ -1,747 +1,113 @@
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+
+<!doctype html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Vibe Konek 2.0 | Next-Gen Anonymous Connection</title>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- PeerJS -->
-    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'vibe-primary': '#00D4FF',
-                        'vibe-secondary': '#FF2E63',
-                        'vibe-accent': '#9D4EDD',
-                        'vibe-dark': '#0A0A0F',
-                        'vibe-card': 'rgba(255, 255, 255, 0.05)',
-                        'vibe-glass': 'rgba(255, 255, 255, 0.08)',
-                        'vibe-border': 'rgba(255, 255, 255, 0.12)',
-                    },
-                    fontFamily: {
-                        'display': ['Outfit', 'sans-serif'],
-                        'body': ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'liquid-flow': 'liquidFlow 20s ease-in-out infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
-                        'shimmer': 'shimmer 3s infinite',
-                        'slide-up': 'slideUp 0.4s ease-out forwards',
-                        'slide-down': 'slideDown 0.4s ease-out forwards',
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'gradient-xy': 'gradientXY 8s ease infinite',
-                    },
-                    keyframes: {
-                        liquidFlow: {
-                            '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        pulseGlow: {
-                            '0%, 100%': { opacity: 0.5 },
-                            '50%': { opacity: 1 },
-                        },
-                        shimmer: {
-                            '0%': { backgroundPosition: '-200% center' },
-                            '100%': { backgroundPosition: '200% center' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(100%)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideDown: {
-                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        gradientXY: {
-                            '0%, 100%': { backgroundPosition: '0% 50%' },
-                            '50%': { backgroundPosition: '100% 50%' },
-                        },
-                    },
-                    backdropBlur: {
-                        'xs': '2px',
-                    }
-                }
-            }
-        }
-    </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vibe Konek 2.0 — Anonymous P2P Chat</title>
+  ./styles.css
+  <!-- PeerJS (CDN) -->
+  <script src="https://unpkg.com/peerjs/"></script>
+  <!-- App scripts -->
+  ./crypto.js</script>
+  ./app.js</script>
 </head>
+<body>
+  <header class="navbar">
+    <div class="brand">Vibe Konek 2.0</div>
+    <div class="stats">
+      <span id="statOnline">Online: —</span>
+      <span id="statWaiting">Waiting: —</span>
+    </div>
+    <button id="btnTheme" class="pill">Toggle Theme</button>
+  </header>
 
-<body class="antialiased">
-    <!-- Liquid Background -->
-    <div class="liquid-bg">
-        <div class="liquid-blob w-[500px] h-[500px] bg-vibe-primary top-[-100px] left-[-100px] opacity-30"></div>
-        <div class="liquid-blob w-[400px] h-[400px] bg-vibe-secondary top-[40%] right-[-50px] opacity-25" style="animation-delay: -5s;"></div>
-        <div class="liquid-blob w-[600px] h-[600px] bg-vibe-accent bottom-[-150px] left-[30%] opacity-20" style="animation-delay: -10s;"></div>
-    </div>
-    
-    <!-- Connection Modal -->
-    <div id="connection-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
-        <div class="glass-card max-w-md w-full p-8 animate-slide-up">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center">
-                    <i class="fa-solid fa-link text-white text-xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-display font-bold text-white">Connect to Server</h2>
-                    <p class="text-sm text-gray-400">Setup your connection preferences</p>
-                </div>
-            </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase block mb-2">Peer Server (Optional)</label>
-                    <input type="text" id="peer-server" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Leave empty for default server" />
-                    <p class="text-xs text-gray-500 mt-1">Use your own PeerJS server for better reliability</p>
-                </div>
-                
-                <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase block mb-2">Connection Type</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="selectConnectionType('public')" id="public-btn" class="p-4 rounded-xl border-2 border-vibe-primary bg-vibe-primary/10">
-                            <i class="fa-solid fa-globe text-vibe-primary text-lg mb-2"></i>
-                            <span class="block text-sm font-bold">Public</span>
-                            <span class="text-xs text-gray-400">Find random stranger</span>
-                        </button>
-                        <button onclick="selectConnectionType('private')" id="private-btn" class="p-4 rounded-xl border-2 border-vibe-border bg-white/5 hover:border-vibe-primary transition-colors">
-                            <i class="fa-solid fa-lock text-gray-400 text-lg mb-2"></i>
-                            <span class="block text-sm font-bold">Private</span>
-                            <span class="text-xs text-gray-400">Connect with ID</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="private-id-section" class="hidden space-y-3">
-                    <div>
-                        <label class="text-sm text-gray-400 block mb-2">Your Connection ID</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="my-peer-id" readonly class="flex-1 bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm" />
-                            <button onclick="copyPeerId()" class="px-4 py-3 bg-vibe-primary/20 border border-vibe-primary rounded-xl hover:bg-vibe-primary/30 transition-colors">
-                                <i class="fa-solid fa-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-sm text-gray-400 block mb-2">Connect to ID</label>
-                        <input type="text" id="connect-peer-id" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none" placeholder="Enter friend's connection ID" />
-                    </div>
-                </div>
-                
-                <div class="pt-4">
-                    <button onclick="initializeConnection()" class="w-full btn-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-plug"></i> Initialize Connection
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-40 p-6">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="glass-card w-12 h-12 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-bolt text-vibe-primary text-xl"></i>
-                </div>
-                <h1 class="text-2xl font-display font-bold">
-                    Vibe<span class="gradient-text">Konek</span>
-                </h1>
-            </div>
-            
-            <div class="hidden md:flex items-center gap-6">
-                <div class="flex items-center gap-2 px-4 py-2 glass-card rounded-full">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-sm font-medium" id="online-count">0</span>
-                    <span class="text-xs text-gray-400">online</span>
-                </div>
-                
-                <button onclick="openSettings()" class="glass-card w-12 h-12 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-            </div>
-            
-            <button class="md:hidden glass-card w-12 h-12 rounded-xl flex items-center justify-center" onclick="toggleMobileMenu()">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="md:hidden glass-card mt-4 p-4 rounded-2xl hidden animate-slide-down">
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span class="text-sm font-medium" id="mobile-online-count">0</span>
-                        <span class="text-xs text-gray-400">online</span>
-                    </div>
-                    
-                    <button onclick="openSettings()" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                </div>
-                
-                <div class="flex gap-2">
-                    <button onclick="startChat('text')" class="flex-1 btn-primary py-3 rounded-xl text-sm font-bold">
-                        <i class="fa-solid fa-comment mr-2"></i> Text
-                    </button>
-                    <button onclick="startChat('video')" class="flex-1 btn-secondary py-3 rounded-xl text-sm font-bold">
-                        <i class="fa-solid fa-video mr-2"></i> Video
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-    
-    <!-- Main Homepage -->
-    <main id="homepage" class="pt-32 pb-20 px-4 max-w-7xl mx-auto">
-        <!-- Hero Section -->
-        <section id="home-section" class="text-center mb-20">
-            <div class="inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full mb-6 animate-float">
-                <i class="fa-solid fa-bolt text-vibe-primary"></i>
-                <span class="text-sm font-bold">PEER-TO-PEER • ENCRYPTED • REAL-TIME</span>
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl font-display font-bold mb-6">
-                Connect <span class="gradient-text">Instantly</span><br/>
-                With <span class="gradient-text">Strangers</span>
-            </h1>
-            
-            <p class="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                Experience next-generation anonymous chat with PeerJS. 
-                No servers, no tracking, just pure peer-to-peer connection.
-            </p>
-            
-            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-                <button onclick="openSettings()" class="btn-primary px-8 py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-play"></i> Start Chatting Now
-                </button>
-                <button onclick="showFeatures()" class="btn-secondary px-8 py-4 rounded-2xl text-lg font-bold">
-                    <i class="fa-solid fa-sparkles mr-2"></i> See Features
-                </button>
-            </div>
-            
-            <!-- Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">P2P</div>
-                    <div class="text-sm text-gray-400 mt-2">Direct Connection</div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">E2EE</div>
-                    <div class="text-sm text-gray-400 mt-2">Encrypted Chat</div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">0ms</div>
-                    <div class="text-sm text-gray-400 mt-2">Direct Delay</div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">WebRTC</div>
-                    <div class="text-sm text-gray-400 mt-2">Technology</div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Features Section -->
-        <section id="features-section" class="mb-20 hidden animate-fade-in">
-            <h2 class="text-4xl font-display font-bold text-center mb-12">
-                Why <span class="gradient-text">Vibe Konek 2.0</span>?
-            </h2>
-            
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-primary to-cyan-500 flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Peer-to-Peer Privacy</h3>
-                    <p class="text-gray-400">Direct WebRTC connections with end-to-end encryption. No central servers storing your data.</p>
-                </div>
-                
-                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-secondary to-pink-500 flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-bolt text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Ultra Low Latency</h3>
-                    <p class="text-gray-400">Direct peer connections with minimal latency. Video and audio in real-time.</p>
-                </div>
-                
-                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-accent to-purple-500 flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-server text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">No Server Required</h3>
-                    <p class="text-gray-400">Works with default PeerJS servers or host your own. Complete control over your data.</p>
-                </div>
-            </div>
-        </section>
-    </main>
-    
-    <!-- Full Screen Chat Interface (Hidden by default) -->
-    <div id="chat-interface" class="fixed inset-0 z-30 hidden">
-        <div class="absolute inset-0 bg-vibe-dark">
-            <!-- Liquid Background -->
-            <div class="liquid-bg">
-                <div class="liquid-blob w-[300px] h-[300px] bg-vibe-primary top-10 left-10 opacity-20"></div>
-                <div class="liquid-blob w-[250px] h-[250px] bg-vibe-secondary bottom-10 right-10 opacity-15"></div>
-            </div>
-        </div>
-        
-        <div class="relative z-10 h-full flex flex-col">
-            <!-- Top Bar -->
-            <div class="glass-intense p-4 border-b border-vibe-border">
-                <div class="max-w-7xl mx-auto flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <button onclick="goHome()" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-arrow-left"></i>
-                        </button>
-                        <div>
-                            <h2 class="font-display font-bold">
-                                Vibe<span class="gradient-text">Konek</span>
-                            </h2>
-                            <p class="text-xs text-gray-400" id="connection-status">Disconnected</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-4">
-                        <div class="hidden md:flex items-center gap-2 px-3 py-2 glass-card rounded-full">
-                            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                            <span class="text-sm" id="chat-online-count">0</span>
-                            <span class="text-xs text-gray-400">online</span>
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <button id="toggle-chat-btn" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
-                                <i class="fa-solid fa-comment"></i>
-                            </button>
-                            <button onclick="openSettings()" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
-                                <i class="fa-solid fa-gear"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Main Content Area -->
-            <div class="flex-1 flex overflow-hidden">
-                <!-- Video Area -->
-                <div id="video-container" class="flex-1 relative hidden">
-                    <!-- Remote Video (Full Screen) -->
-                    <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-                    
-                    <!-- Local Video (Picture-in-Picture) -->
-                    <div class="absolute bottom-6 right-6 w-48 h-36 bg-black rounded-xl overflow-hidden border-2 border-vibe-primary shadow-2xl">
-                        <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
-                        <div class="absolute top-2 right-2">
-                            <div id="local-status" class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Video Controls -->
-                    <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-4 bg-black/60 backdrop-blur-xl px-6 py-3 rounded-full border border-vibe-border">
-                        <button onclick="toggleMute()" id="mute-btn" class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
-                            <i class="fa-solid fa-microphone text-white"></i>
-                        </button>
-                        <button onclick="toggleVideo()" id="video-btn" class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
-                            <i class="fa-solid fa-video text-white"></i>
-                        </button>
-                        <button onclick="endCall()" class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors">
-                            <i class="fa-solid fa-phone-slash text-white"></i>
-                        </button>
-                        <button onclick="switchToText()" class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
-                            <i class="fa-solid fa-comment"></i>
-                        </button>
-                    </div>
-                    
-                    <!-- Partner Info Overlay -->
-                    <div class="absolute top-6 left-6 glass-card px-4 py-2 rounded-full flex items-center gap-2">
-                        <div id="partner-status" class="w-2 h-2 rounded-full bg-red-500"></div>
-                        <span class="text-sm" id="partner-name">Looking for partner...</span>
-                        <span class="text-xs text-gray-400" id="partner-gender"></span>
-                    </div>
-                    
-                    <!-- Loading Overlay -->
-                    <div id="video-loading" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center">
-                        <div class="loading-dots mb-4">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                        <p class="text-vibe-primary font-bold">Finding your match...</p>
-                        <p class="text-sm text-gray-400 mt-2">Searching for compatible partners</p>
-                    </div>
-                </div>
-                
-                <!-- Chat Area -->
-                <div id="text-chat-container" class="flex-1 flex flex-col hidden">
-                    <div class="flex-1 flex flex-col glass-intense mx-4 my-6 rounded-3xl overflow-hidden">
-                        <!-- Chat Header -->
-                        <div class="p-6 border-b border-vibe-border flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center">
-                                    <i class="fa-solid fa-user-secret"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold">Anonymous Chat</h3>
-                                    <div class="flex items-center gap-2">
-                                        <p class="text-xs text-gray-400" id="chat-status-text">Connecting...</p>
-                                        <div id="typing-indicator" class="hidden flex items-center gap-1">
-                                            <span class="text-xs text-vibe-primary">Typing</span>
-                                            <div class="flex gap-1">
-                                                <div class="w-1 h-1 rounded-full bg-vibe-primary animate-pulse"></div>
-                                                <div class="w-1 h-1 rounded-full bg-vibe-primary animate-pulse" style="animation-delay: 0.2s"></div>
-                                                <div class="w-1 h-1 rounded-full bg-vibe-primary animate-pulse" style="animation-delay: 0.4s"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="flex gap-2">
-                                <button onclick="switchToVideo()" id="video-request-btn" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" title="Switch to Video">
-                                    <i class="fa-solid fa-video"></i>
-                                </button>
-                                <button onclick="nextPartner()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" title="Next Partner">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Messages Container (Fixed height with scroll) -->
-                        <div id="messages-container" class="flex-1 overflow-y-auto p-4">
-                            <div class="space-y-4" id="messages">
-                                <!-- Messages will appear here -->
-                                <div class="text-center py-8">
-                                    <div class="inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full mb-3">
-                                        <i class="fa-solid fa-bolt text-vibe-primary"></i>
-                                        <span class="text-sm">Secure Peer-to-Peer Connection</span>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">Your messages are end-to-end encrypted</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Input Area -->
-                        <div class="p-6 border-t border-vibe-border">
-                            <div class="flex gap-3">
-                                <textarea id="message-input" rows="1" placeholder="Type your message..." class="flex-1 bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none resize-none" disabled></textarea>
-                                <button onclick="sendMessage()" id="send-btn" class="btn-primary w-14 h-14 rounded-xl flex items-center justify-center" disabled>
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </button>
-                            </div>
-                            <div class="flex justify-between mt-3">
-                                <div class="text-xs text-gray-500">
-                                    Press <kbd class="px-2 py-1 bg-black/30 rounded">Enter</kbd> to send, <kbd class="px-2 py-1 bg-black/30 rounded">Shift+Enter</kbd> for new line
-                                </div>
-                                <button onclick="endChat()" class="text-sm text-red-400 hover:text-red-300">
-                                    <i class="fa-solid fa-power-off mr-1"></i> End Chat
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Side Panel -->
-                    <div class="w-80 mx-6 my-6 hidden lg:block">
-                        <div class="glass-card h-full p-6 flex flex-col">
-                            <h3 class="text-xl font-bold mb-6">Your Vibe</h3>
-                            
-                            <!-- Profile -->
-                            <div class="mb-8">
-                                <div class="flex items-center gap-3 mb-4">
-                                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center text-2xl">
-                                        <i class="fa-solid fa-user"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold" id="user-name">Anonymous</h4>
-                                        <p class="text-sm text-gray-400" id="user-gender">Gender: Not specified</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="space-y-3">
-                                    <div>
-                                        <label class="text-xs text-gray-500 block mb-1">Interests</label>
-                                        <div class="flex flex-wrap gap-2" id="interests-tags">
-                                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#chat</span>
-                                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#global</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Partner Info -->
-                            <div class="mb-8">
-                                <h4 class="font-bold mb-4">Partner Info</h4>
-                                <div class="space-y-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-vibe-secondary to-pink-500 flex items-center justify-center">
-                                            <i class="fa-solid fa-user-secret"></i>
-                                        </div>
-                                        <div>
-                                            <h5 class="font-medium" id="partner-display-name">Stranger</h5>
-                                            <p class="text-xs text-gray-400" id="partner-display-gender">Gender: Unknown</p>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-gray-500 block mb-1">Partner's Interests</label>
-                                        <div class="flex flex-wrap gap-2" id="partner-interests-tags">
-                                            <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#connecting...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Stats -->
-                            <div class="mt-auto">
-                                <h4 class="font-bold mb-4">Session Stats</h4>
-                                <div class="space-y-3">
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400">Connection Time</span>
-                                        <span class="font-bold" id="session-time">0:00</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400">Messages Sent</span>
-                                        <span class="font-bold" id="message-count">0</span>
-                                    </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-400">Partners Today</span>
-                                        <span class="font-bold" id="partner-count">0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
-        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div class="p-6 border-b border-vibe-border flex items-center justify-between">
-                <h2 class="text-2xl font-bold">Settings</h2>
-                <button onclick="closeSettings()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <div class="p-6 space-y-6">
-                <!-- Profile -->
-                <div>
-                    <h3 class="text-lg font-bold mb-4">Your Profile</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-sm text-gray-400 block mb-2">Display Name</label>
-                            <input type="text" id="display-name" placeholder="Anonymous" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none" />
-                        </div>
-                        
-                        <div>
-                            <label class="text-sm text-gray-400 block mb-2">Gender</label>
-                            <select id="gender-select" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none">
-                                <option value="not-specified">Prefer not to say</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="text-sm text-gray-400 block mb-2">Interests (comma separated)</label>
-                            <input type="text" id="interests-input" placeholder="music, gaming, tech, movies" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none" />
-                            <p class="text-xs text-gray-500 mt-1">Used to match you with compatible partners</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Connection Settings -->
-                <div>
-                    <h3 class="text-lg font-bold mb-4">Connection Settings</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h4 class="font-medium">PeerJS Server</h4>
-                                <p class="text-sm text-gray-400">Custom signaling server</p>
-                            </div>
-                            <button onclick="openConnectionModal()" class="px-4 py-2 bg-vibe-primary/20 border border-vibe-primary rounded-xl hover:bg-vibe-primary/30 transition-colors text-sm">
-                                Configure
-                            </button>
-                        </div>
-                        
-                        <div>
-                            <label class="flex items-center justify-between cursor-pointer">
-                                <span class="text-gray-400">Auto-reconnect</span>
-                                <div class="relative">
-                                    <input type="checkbox" id="auto-reconnect" class="sr-only" checked />
-                                    <div class="block bg-gray-600 w-14 h-8 rounded-full"></div>
-                                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Chat Mode -->
-                <div>
-                    <h3 class="text-lg font-bold mb-4">Default Connection Mode</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="selectMode('text')" id="text-mode-btn" class="p-6 rounded-2xl border-2 border-vibe-primary bg-vibe-primary/10 flex flex-col items-center justify-center gap-3">
-                            <i class="fa-solid fa-comments text-3xl text-vibe-primary"></i>
-                            <span class="font-bold">Text Chat</span>
-                        </button>
-                        
-                        <button onclick="selectMode('video')" id="video-mode-btn" class="p-6 rounded-2xl border-2 border-vibe-border bg-white/5 flex flex-col items-center justify-center gap-3 hover:border-vibe-primary transition-colors">
-                            <i class="fa-solid fa-video text-3xl text-gray-400"></i>
-                            <span class="font-bold">Video Call</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Start Button -->
-                <button onclick="startChat()" class="w-full btn-primary py-4 rounded-xl text-lg font-bold flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-play"></i> Start Connection
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Safety Modal -->
-    <div id="safety-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
-        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div class="p-6 border-b border-vibe-border flex items-center justify-between">
-                <h2 class="text-2xl font-bold">Safety Guidelines</h2>
-                <button onclick="closeSafety()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <div class="p-6 space-y-6">
-                <div class="space-y-4">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-user-secret text-red-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold mb-1">Protect Your Identity</h4>
-                            <p class="text-gray-400 text-sm">Never share personal information like your real name, address, phone number, or financial details.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-flag text-yellow-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold mb-1">Report Inappropriate Behavior</h4>
-                            <p class="text-gray-400 text-sm">Disconnect immediately if you encounter harassment, bullying, or inappropriate content.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-hand text-green-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold mb-1">You're In Control</h4>
-                            <p class="text-gray-400 text-sm">You can disconnect at any time. Don't feel pressured to continue uncomfortable conversations.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="pt-6 border-t border-vibe-border">
-                    <p class="text-sm text-gray-500">
-                        By using Vibe Konek, you agree to our 
-                        <a href="#" class="text-vibe-primary hover:underline">Terms of Service</a> and 
-                        <a href="#" class="text-vibe-primary hover:underline">Privacy Policy</a>.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- End Chat Modal -->
-    <div id="end-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
-        <div class="glass-card max-w-md w-full p-8 text-center animate-slide-up">
-            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center mx-auto mb-6">
-                <i class="fa-solid fa-link-slash text-white text-3xl"></i>
-            </div>
-            
-            <h3 class="text-2xl font-bold mb-3" id="end-title">Connection Ended</h3>
-            <p class="text-gray-400 mb-8" id="end-message">Your peer-to-peer connection has been disconnected.</p>
-            
-            <div class="space-y-3">
-                <button onclick="nextPartner()" class="w-full btn-primary py-4 rounded-xl font-bold">
-                    <i class="fa-solid fa-rotate-right mr-2"></i> Find New Partner
-                </button>
-                <button onclick="goHome()" class="w-full btn-secondary py-4 rounded-xl font-bold">
-                    <i class="fa-solid fa-home mr-2"></i> Return Home
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Connection Status Toast -->
-    <div id="connection-toast" class="fixed bottom-4 right-4 glass-card px-6 py-3 rounded-xl hidden z-50 animate-slide-up">
-        <div class="flex items-center gap-3">
-            <div class="w-3 h-3 rounded-full" id="toast-status"></div>
-            <span class="text-sm" id="toast-message"></span>
-        </div>
-    </div>
-    
-    <!-- Footer -->
-    <footer class="py-8 px-4 border-t border-vibe-border bg-black/30">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl glass-card flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-vibe-primary"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-display font-bold">Vibe Konek 2.0</h3>
-                        <p class="text-xs text-gray-500">Peer-to-Peer Anonymous Connections</p>
-                    </div>
-                </div>
-                
-                <div class="flex flex-wrap gap-6 text-sm">
-                    <button onclick="openSafety()" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa-solid fa-shield mr-2"></i> Safety
-                    </button>
-                    <button onclick="openConnectionModal()" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa-solid fa-server mr-2"></i> Server Setup
-                    </button>
-                    <a href="https://peerjs.com" target="_blank" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa-solid fa-link mr-2"></i> Powered by PeerJS
-                    </a>
-                </div>
-                
-                <div class="text-sm text-gray-500">
-                    © 2025 Vibe Konek 2.0. All rights reserved.
-                </div>
-            </div>
-        </div>
-    </footer>
+  <main class="container">
+    <section class="hero">
+      <h1>Connect Instantly & Anonymously</h1>
+      <p>No accounts, no tracking. Text or video—your vibe, your rules.</p>
+      <div class="actions">
+        #connectStart Chatting</a>
+        #featuresSee Features</a>
+      </div>
+    </section>
 
-    <!-- Main JavaScript -->
-    <script src="script.js"></script>
+    <section id="connect" class="panel">
+      <h2>Start a Connection</h2>
+      <form id="connectForm" class="grid">
+        <div>
+          <label>Display Name</label>
+          <input id="displayName" placeholder="Anonymous" maxlength="24" />
+        </div>
+        <div>
+          <label>Mode</label>
+          <select id="mode">
+            <option value="text" selected>Text Chat</option>
+            <option value="video">Video Call</option>
+          </select>
+        </div>
+        <div>
+          <label>Interests (comma)</label>
+          <input id="interests" placeholder="#chat,#global" />
+        </div>
+        <div>
+          <label>Gender</label>
+          <select id="gender">
+            <option value="any" selected>Any</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="full">
+          <button class="primary" id="btnStart">Start Connection</button>
+          <button class="ghost" id="btnEnd" disabled>End Chat</button>
+        </div>
+      </form>
+      <p id="status" class="status">Idle.</p>
+    </section>
+
+    <section class="chat panel">
+      <h2>Anonymous Chat</h2>
+      <div class="chatwrap">
+        <ul id="messages" class="messages" aria-live="polite"></ul>
+        <form id="sendForm" class="sendrow">
+          <input id="messageInput" placeholder="Type a message…" autocomplete="off" />
+          <button class="primary" id="btnSend" disabled>Send</button>
+          <button class="ghost" id="btnReport" type="button">Report</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="video panel">
+      <h2>Video</h2>
+      <div class="video-grid">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+      </div>
+    </section>
+
+    <section id="features" class="panel">
+      <h2>Why Vibe Konek?</h2>
+      <div class="features">
+        <article><h3>Privacy-first</h3><p>Transport is encrypted by WebRTC; messages are additionally AES‑GCM encrypted end‑to‑end using keys derived via ECDH. </p></article>
+        <article><h3>Fast global</h3><p>STUN helps peers discover routes across NATs; add TURN later for tougher networks.</p></article>
+        <article><h3>Mobile friendly</h3><p>Responsive, accessible design with touch‑optimized chat and video panels.</p></article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Safety Guidelines</h2>
+      <ul class="bullets">
+        <li>Never share personal info (name, address, phone, financials).</li>
+        <li>Use “Report” for harassment or inappropriate behavior.</li>
+        <li>You’re in control—disconnect any time.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>© 2025 Vibe Konek 2.0. All rights reserved.</small>
+  </footer>
 </body>
 </html>
