@@ -3,1639 +3,1318 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Vibe Konek | Anonymous P2P Connections</title>
-  
-  	 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <title>Vibe Konek 2.0 | Next-Gen Anonymous Connection</title>
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,600;12..96,800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-    <!-- Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Socket.io -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'vibe-yellow': '#FACC15',
-                        'vibe-black': '#030408',
-                        'vibe-glass': 'rgba(255, 255, 255, 0.03)',
+                        'vibe-primary': '#00D4FF',
+                        'vibe-secondary': '#FF2E63',
+                        'vibe-accent': '#9D4EDD',
+                        'vibe-dark': '#0A0A0F',
+                        'vibe-card': 'rgba(255, 255, 255, 0.05)',
+                        'vibe-glass': 'rgba(255, 255, 255, 0.08)',
                         'vibe-border': 'rgba(255, 255, 255, 0.12)',
-                        'vibe-cyan': '#22D3EE',
-                        'vibe-purple': '#A855F7',
-                        'vibe-pink': '#F472B6',
-                        'vibe-green': '#4ADE80',
-                        'vibe-red': '#F87171'
                     },
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Bricolage Grotesque', 'sans-serif'],
+                        'display': ['Outfit', 'sans-serif'],
+                        'body': ['Inter', 'sans-serif'],
                     },
                     animation: {
-                        'liquid-blob': 'liquid-blob 20s infinite alternate',
-                        'marquee': 'marquee 40s linear infinite',
-                        'float-soft': 'float-soft 6s ease-in-out infinite',
-                        'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
-                        'shine': 'shine 3s infinite',
-                        'radar': 'radar 4s linear infinite',
-                        'spin-slow': 'spin 8s linear infinite',
-                        'spin-reverse': 'spin-reverse 12s linear infinite',
-                        'fade-in': 'fadeIn 0.3s ease-out',
-                        'slide-up': 'slideUp 0.4s ease-out',
-                        'typing-dots': 'typingDots 1.4s infinite'
+                        'liquid-flow': 'liquidFlow 20s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+                        'shimmer': 'shimmer 3s infinite',
+                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'slide-down': 'slideDown 0.4s ease-out forwards',
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'gradient-xy': 'gradientXY 8s ease infinite',
                     },
                     keyframes: {
-                        'liquid-blob': {
-                            '0%': { transform: 'translate(0, 0) scale(1) rotate(0deg)' },
-                            '33%': { transform: 'translate(50px, -80px) scale(1.2) rotate(120deg)' },
-                            '66%': { transform: 'translate(-40px, 40px) scale(0.8) rotate(240deg)' },
-                            '100%': { transform: 'translate(0, 0) scale(1) rotate(360deg)' },
+                        liquidFlow: {
+                            '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
                         },
-                        marquee: {
-                            '0%': { transform: 'translateX(0%)' },
-                            '100%': { transform: 'translateX(-50%)' },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
                         },
-                        'float-soft': {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-15px)' },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: 0.5 },
+                            '50%': { opacity: 1 },
                         },
-                        'shine': {
+                        shimmer: {
                             '0%': { backgroundPosition: '-200% center' },
-                            '100%': { backgroundPosition: '200% center' }
+                            '100%': { backgroundPosition: '200% center' },
                         },
-                        radar: {
-                            '0%': { transform: 'rotate(0deg)' },
-                            '100%': { transform: 'rotate(360deg)' }
+                        slideUp: {
+                            '0%': { transform: 'translateY(100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
                         },
-                        'spin-reverse': {
-                            'from': { transform: 'rotate(360deg)' },
-                            'to': { transform: 'rotate(0deg)' }
+                        slideDown: {
+                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
                         },
                         fadeIn: {
                             '0%': { opacity: '0' },
-                            '100%': { opacity: '1' }
+                            '100%': { opacity: '1' },
                         },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        gradientXY: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
                         },
-                        typingDots: {
-                            '0%, 60%, 100%': { transform: 'scale(0.6)', opacity: '0.5' },
-                            '30%': { transform: 'scale(1)', opacity: '1' }
-                        }
+                    },
+                    backdropBlur: {
+                        'xs': '2px',
                     }
                 }
             }
         }
     </script>
-
+    
     <style>
+        /* Custom Styles */
         body {
-            background-color: #030408;
-            color: #F8FAFC;
+            background-color: #0A0A0F;
+            color: #FFFFFF;
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-
-        .glass-noise::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-            opacity: 0.04;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .liquid-canvas {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            filter: blur(120px);
-            opacity: 0.4;
-        }
-
-        .blob-unit {
-            position: absolute;
-            border-radius: 50%;
-            mix-blend-mode: screen;
-        }
-
-        .glass-hyper {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-            backdrop-filter: blur(28px) saturate(200%);
-            -webkit-backdrop-filter: blur(28px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .glass-hyper:hover {
-            border-color: rgba(250, 204, 21, 0.4);
-            transform: translateY(-8px) scale(1.01);
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .glass-hyper-static {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-            backdrop-filter: blur(28px) saturate(200%);
-            -webkit-backdrop-filter: blur(28px) saturate(200%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-        }
-
-        .logo-container {
-            background: linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 100px;
-            padding: 10px 24px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            transition: all 0.4s ease;
-            position: relative;
+        
+        /* Liquid Glass Effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
         
-        .logo-container:hover {
-            transform: scale(1.03);
-            border-color: rgba(250, 204, 21, 0.5);
-            background: rgba(255, 255, 255, 0.08);
+        .glass-intense {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
-
-        .shimmer-liquid {
-            background: linear-gradient(135deg, #FACC15 0%, #FFFFFF 40%, #22D3EE 60%, #FACC15 100%);
-            background-size: 300% auto;
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(90deg, #00D4FF, #9D4EDD, #FF2E63);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: shine 6s linear infinite;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: gradientXY 4s ease infinite;
         }
-
-        .btn-liquid {
-            position: relative;
-            background: #FACC15;
-            color: #000;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            font-weight: 800;
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-
-        .btn-liquid:hover {
-            transform: translateY(-2px);
-        }
-
-        .modal-liquid-bg {
-            background: rgba(1, 2, 4, 0.9);
-            backdrop-filter: blur(40px);
-        }
-
-        .text-readable-title { color: #FFFFFF; }
-        .text-readable-body { color: #E2E8F0; } 
-        .text-readable-muted { color: #CBD5E1; } 
-
-        .no-scroll { overflow: hidden; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: rgba(250, 204, 21, 0.5); border-radius: 20px; }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #FACC15 !important;
-            background: rgba(255, 255, 255, 0.08) !important;
-        }
-
-        /* Chat Bubble Styles */
-        .bubble-me {
-            background: linear-gradient(135deg, #FACC15, #FBBF24);
-            color: #000;
-            border-radius: 20px 20px 4px 20px;
-            max-width: 70%;
-            word-wrap: break-word;
-        }
-
-        .bubble-them {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #E2E8F0;
-            border-radius: 20px 20px 20px 4px;
-            max-width: 70%;
-            word-wrap: break-word;
-        }
-
-        .bubble-system {
-            background: rgba(34, 211, 238, 0.1);
-            border: 1px solid rgba(34, 211, 238, 0.2);
-            color: #A5F3FC;
-            border-radius: 12px;
-            max-width: 85%;
-            margin: 0 auto;
-            padding: 8px 12px;
-        }
-
-        /* File Preview Styles */
-        .file-preview {
+        ::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #00D4FF, #9D4EDD);
+            border-radius: 10px;
+        }
+        
+        /* Chat Bubbles */
+        .bubble-user {
+            background: linear-gradient(135deg, #00D4FF, #0099FF);
+            color: white;
+            border-radius: 20px 20px 4px 20px;
+            max-width: 80%;
+        }
+        
+        .bubble-stranger {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 20px 20px 20px 4px;
+            max-width: 80%;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 12px;
-            transition: all 0.3s ease;
         }
-
-        .file-preview:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #FACC15;
-        }
-
-        /* Video/Audio Room Styles */
+        
+        /* Video Container */
         .video-container {
-            background: rgba(0, 0, 0, 0.5);
+            position: relative;
             border-radius: 20px;
             overflow: hidden;
-            position: relative;
+            background: #000;
         }
-
-        .video-element {
+        
+        .video-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* Loading Animation */
+        .loading-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00D4FF;
+            margin: 0 4px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* Liquid Background */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            z-index: -1;
+            opacity: 0.3;
+            pointer-events: none;
         }
-
-        .participant-tile {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid rgba(250, 204, 21, 0.3);
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
+        
+        .liquid-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            animation: liquidFlow 20s ease-in-out infinite;
         }
-
-        /* Interest Tag Styles */
-        .interest-tag {
-            background: rgba(250, 204, 21, 0.1);
-            border: 1px solid rgba(250, 204, 21, 0.3);
-            color: #FACC15;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 600;
+        
+        /* Button Effects */
+        .btn-primary {
+            background: linear-gradient(135deg, #00D4FF, #0099FF);
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
         }
-
-        /* Loading Screen Specifics */
-        .radar-sweep {
-            background: conic-gradient(from 0deg, rgba(250, 204, 21, 0.4) 0%, transparent 50%);
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
         }
-        .mesh-bg {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
         }
-        .loading-ring {
-            border: 2px solid transparent;
-            border-top-color: rgba(250, 204, 21, 0.5);
-            border-bottom-color: rgba(34, 211, 238, 0.5);
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .glass-card {
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            
+            .mobile-full {
+                width: 100vw;
+                margin-left: -1rem;
+                margin-right: -1rem;
+            }
         }
     </style>
 </head>
 
-<body class="antialiased glass-noise">
-    <!-- Connecting Overlay (Full Screen) -->
-    <div id="connectingOverlay" class="fixed inset-0 z-[200] bg-vibe-black flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-700 overflow-hidden">
-        <!-- Mesh Background -->
-        <div class="absolute inset-0 mesh-bg opacity-30"></div>
-        
-        <!-- Radar Visualization Container -->
-        <div class="relative w-80 h-80 mb-16 flex items-center justify-center">
-            <!-- Outermost Rotating Ring -->
-            <div class="absolute inset-0 rounded-full border-2 border-white/5 animate-spin-slow"></div>
-            <div class="absolute inset-0 rounded-full border-t-2 border-vibe-yellow/30 animate-spin-slow"></div>
-            
-            <!-- Mid Ring -->
-            <div class="absolute inset-8 rounded-full border border-vibe-cyan/20 animate-spin-reverse"></div>
-            <div class="absolute inset-8 rounded-full border-b-2 border-vibe-cyan/40 animate-spin-reverse"></div>
-            
-            <!-- Signal Rings -->
-            <div class="absolute inset-16 rounded-full border border-white/5"></div>
-            <div class="absolute inset-24 rounded-full border border-white/5"></div>
-            
-            <!-- The Radar Sweep -->
-            <div class="absolute inset-0 rounded-full radar-sweep animate-radar"></div>
-            
-            <!-- Central Bolt -->
-            <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
-                <i class="fa-solid fa-bolt text-vibe-yellow text-6xl animate-pulse filter drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]"></i>
-                <span class="text-[9px] font-black text-vibe-yellow tracking-[0.4em] uppercase mt-4">Active</span>
+<body class="antialiased">
+    <!-- Liquid Background -->
+    <div class="liquid-bg">
+        <div class="liquid-blob w-[500px] h-[500px] bg-vibe-primary top-[-100px] left-[-100px] opacity-30"></div>
+        <div class="liquid-blob w-[400px] h-[400px] bg-vibe-secondary top-[40%] right-[-50px] opacity-25" style="animation-delay: -5s;"></div>
+        <div class="liquid-blob w-[600px] h-[600px] bg-vibe-accent bottom-[-150px] left-[30%] opacity-20" style="animation-delay: -10s;"></div>
+    </div>
+    
+    <!-- Firebase Setup Modal -->
+    <div id="setup-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
+        <div class="glass-card max-w-md w-full p-8 animate-slide-up">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-white text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-display font-bold text-white">Setup Vibe Konek</h2>
+                    <p class="text-sm text-gray-400">Connect to Firebase for real-time chat</p>
+                </div>
             </div>
-
-            <!-- Dynamic Nodes (Mock Data points) -->
-            <div class="absolute top-10 left-20 w-1.5 h-1.5 bg-vibe-cyan rounded-full animate-pulse shadow-[0_0_10px_#22D3EE]"></div>
-            <div class="absolute bottom-20 right-10 w-1.5 h-1.5 bg-vibe-yellow rounded-full animate-pulse shadow-[0_0_10px_#FACC15]" style="animation-delay: 1.2s"></div>
-            <div class="absolute top-40 left-5 w-1 h-1 bg-white rounded-full animate-pulse" style="animation-delay: 0.5s"></div>
-        </div>
-
-        <div class="relative z-20 text-center">
-            <h2 class="font-display text-4xl md:text-6xl font-extrabold text-white tracking-tighter uppercase mb-4 leading-none">
-                Searching <br/> <span class="text-vibe-yellow shimmer-liquid">Mesh Layer</span>
-            </h2>
             
-            <!-- Live Status Log -->
-            <div class="flex flex-col items-center gap-2 mb-10">
-                <div class="flex items-center gap-3">
-                    <span id="loadingStatusText" class="text-[11px] font-black text-vibe-cyan uppercase tracking-[0.6em]">Initializing Node</span>
-                    <div class="flex gap-1.5">
-                        <div class="w-1.5 h-1.5 rounded-full bg-vibe-cyan animate-bounce" style="animation-delay: 0s"></div>
-                        <div class="w-1.5 h-1.5 rounded-full bg-vibe-cyan animate-bounce" style="animation-delay: 0.1s"></div>
-                        <div class="w-1.5 h-1.5 rounded-full bg-vibe-cyan animate-bounce" style="animation-delay: 0.2s"></div>
+            <form id="config-form" class="space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-gray-400 uppercase block mb-2">Firebase Config</label>
+                    <div class="space-y-3">
+                        <input type="text" id="fb-apiKey" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="API Key (AIzaSy...)" />
+                        <input type="text" id="fb-authDomain" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Auth Domain (project.firebaseapp.com)" />
+                        <input type="text" id="fb-projectId" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Project ID" />
+                        <input type="text" id="fb-storageBucket" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Storage Bucket (optional)" />
+                        <input type="text" id="fb-messagingSenderId" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Messaging Sender ID (optional)" />
+                        <input type="text" id="fb-appId" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="App ID" />
                     </div>
                 </div>
-                <p id="technicalLog" class="text-[9px] font-mono text-white/20 uppercase tracking-[0.3em]">Handshaking WebRTC Port 5001...</p>
+                
+                <div class="pt-4">
+                    <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-link"></i> Connect to Firebase
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-3">
+                        Don't have Firebase? 
+                        <a href="https://firebase.google.com" target="_blank" class="text-vibe-primary hover:underline">Create a free project</a>
+                    </p>
+                </div>
+            </form>
+            
+            <div class="mt-6 pt-6 border-t border-vibe-border">
+                <button onclick="skipFirebase()" class="text-sm text-gray-400 hover:text-white w-full text-center">
+                    Skip for now (demo mode)
+                </button>
             </div>
-
-            <button onclick="cancelConnection()" class="px-12 py-5 glass-hyper rounded-full text-[10px] font-black uppercase tracking-[0.5em] text-white/40 hover:text-vibe-pink hover:border-vibe-pink/50 transition-all active:scale-95 group">
-                <i class="fa-solid fa-power-off mr-3 group-hover:rotate-90 transition-transform"></i>
-                Abort Protocol
+        </div>
+    </div>
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-40 p-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="glass-card w-12 h-12 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-vibe-primary text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-display font-bold">
+                    Vibe<span class="gradient-text">Konek</span>
+                </h1>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6">
+                <div class="flex items-center gap-2 px-4 py-2 glass-card rounded-full">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-sm font-medium" id="online-count">12,845</span>
+                    <span class="text-xs text-gray-400">online</span>
+                </div>
+                
+                <button onclick="openSettings()" class="glass-card w-12 h-12 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+            
+            <button class="md:hidden glass-card w-12 h-12 rounded-xl flex items-center justify-center" onclick="toggleMobileMenu()">
+                <i class="fa-solid fa-bars"></i>
             </button>
         </div>
         
-        <!-- Bottom Data Stream Decoration -->
-        <div class="absolute bottom-10 left-0 right-0 px-20 flex justify-between opacity-10 pointer-events-none">
-            <div class="font-mono text-[8px] space-y-1">
-                <p>LATENCY: 12ms</p>
-                <p>NODES: 14,882</p>
-                <p>PKT_LOSS: 0.00%</p>
-            </div>
-            <div class="font-mono text-[8px] space-y-1 text-right">
-                <p>AES_256_ACTIVE</p>
-                <p>WEBRTC_STABLE</p>
-                <p>GENESIS_SYNC</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Dynamic Liquid Background -->
-    <div class="liquid-canvas">
-        <div class="blob-unit w-[600px] h-[600px] bg-vibe-yellow top-[-10%] left-[-15%] animate-liquid-blob"></div>
-        <div class="blob-unit w-[500px] h-[500px] bg-vibe-cyan top-[30%] right-[-10%] animate-liquid-blob" style="animation-delay: -5s;"></div>
-        <div class="blob-unit w-[450px] h-[450px] bg-vibe-purple bottom-[10%] left-[20%] animate-liquid-blob" style="animation-delay: -10s;"></div>
-    </div>
-
-    <!-- Navigation Header -->
-    <header id="mainHeader" class="fixed top-8 left-8 z-50 transition-opacity duration-500 ease-in-out">
-        <div class="logo-container group cursor-pointer" onclick="showPage('home')">
-            <i class="fa-solid fa-bolt text-vibe-yellow text-2xl filter drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"></i>
-            <span class="font-display font-extrabold text-xl tracking-tighter uppercase text-white">
-                Vibe <span class="text-vibe-yellow">Konek</span>
-            </span>
-        </div>
-    </header>
-
-    <!-- Scroll to Top Button -->
-    <button id="scrollTopBtn" onclick="window.scrollTo({top:0, behavior:'smooth'})" class="fixed bottom-8 right-8 z-[70] w-14 h-14 glass-hyper rounded-full flex items-center justify-center text-vibe-yellow text-xl opacity-0 pointer-events-none translate-y-10 transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-xl border border-white/20">
-        <i class="fa-solid fa-arrow-up"></i>
-    </button>
-
-    <!-- Modal System -->
-    <div id="modalOverlay" class="fixed inset-0 z-[100] flex items-center justify-center p-6 opacity-0 pointer-events-none transition-all duration-500 modal-liquid-bg" onclick="handleOverlayClick(event)">
-        <div class="modal-box w-full max-w-2xl glass-hyper rounded-[3rem] overflow-hidden flex flex-col transform scale-90 transition-all duration-500">
-            <div class="p-8 border-b border-white/10 flex items-center justify-between">
-                <div class="flex items-center gap-5">
-                    <button id="modalBackBtn" class="hidden w-12 h-12 rounded-full bg-white/5 items-center justify-center hover:bg-white/10 transition-colors text-white mr-2 active:scale-90">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
-                    <div class="w-14 h-14 bg-vibe-yellow/20 rounded-2xl flex items-center justify-center border border-vibe-yellow/30">
-                        <i id="modalIcon" class="fa-solid fa-bolt text-vibe-yellow text-2xl"></i>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden glass-card mt-4 p-4 rounded-2xl hidden animate-slide-down">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span class="text-sm font-medium" id="mobile-online-count">12,845</span>
+                        <span class="text-xs text-gray-400">online</span>
                     </div>
-                    <div>
-                        <h3 id="modalTitle" class="font-display text-3xl font-extrabold uppercase tracking-tight text-white">Title</h3>
-                        <p id="modalSubtitle" class="text-[10px] text-vibe-yellow uppercase tracking-widest mt-1 font-black">Protocol Intelligence</p>
+                    
+                    <button onclick="openSettings()" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="startChat('text')" class="flex-1 btn-primary py-3 rounded-xl text-sm font-bold">
+                        <i class="fa-solid fa-comment mr-2"></i> Text
+                    </button>
+                    <button onclick="startChat('video')" class="flex-1 btn-secondary py-3 rounded-xl text-sm font-bold">
+                        <i class="fa-solid fa-video mr-2"></i> Video
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 px-4 max-w-7xl mx-auto">
+        <!-- Hero Section -->
+        <section id="home-section" class="text-center mb-20">
+            <div class="inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full mb-6 animate-float">
+                <i class="fa-solid fa-bolt text-vibe-primary"></i>
+                <span class="text-sm font-bold">ANONYMOUS • ENCRYPTED • REAL-TIME</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-display font-bold mb-6">
+                Connect <span class="gradient-text">Instantly</span><br/>
+                With <span class="gradient-text">Strangers</span>
+            </h1>
+            
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+                Experience next-generation anonymous chat with liquid glass design. 
+                No accounts, no tracking, just pure connection.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+                <button onclick="openSettings()" class="btn-primary px-8 py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i> Start Chatting Now
+                </button>
+                <button onclick="showFeatures()" class="btn-secondary px-8 py-4 rounded-2xl text-lg font-bold">
+                    <i class="fa-solid fa-sparkles mr-2"></i> See Features
+                </button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="text-3xl font-bold gradient-text">24/7</div>
+                    <div class="text-sm text-gray-400 mt-2">Active Connection</div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="text-3xl font-bold gradient-text">E2EE</div>
+                    <div class="text-sm text-gray-400 mt-2">Encrypted Chat</div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="text-3xl font-bold gradient-text">150+</div>
+                    <div class="text-sm text-gray-400 mt-2">Countries</div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="text-3xl font-bold gradient-text">0ms</div>
+                    <div class="text-sm text-gray-400 mt-2">Delay Target</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Features Section -->
+        <section id="features-section" class="mb-20 hidden animate-fade-in">
+            <h2 class="text-4xl font-display font-bold text-center mb-12">
+                Why <span class="gradient-text">Vibe Konek 2.0</span>?
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-primary to-cyan-500 flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Military-Grade Privacy</h3>
+                    <p class="text-gray-400">End-to-end encrypted chats that disappear when you disconnect. No logs, no tracking.</p>
+                </div>
+                
+                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-secondary to-pink-500 flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-bolt text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Lightning Fast</h3>
+                    <p class="text-gray-400">Connect to strangers worldwide in under 2 seconds with our optimized matching system.</p>
+                </div>
+                
+                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-accent to-purple-500 flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-mobile-screen text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Mobile First</h3>
+                    <p class="text-gray-400">Designed for mobile with intuitive gestures and optimized for all screen sizes.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Chat Interface -->
+        <section id="chat-section" class="hidden">
+            <div class="grid lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
+                <!-- Video Area -->
+                <div id="video-container" class="lg:col-span-2 hidden">
+                    <div class="video-container h-full relative">
+                        <!-- Remote Video -->
+                        <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                        
+                        <!-- Local Video (PiP) -->
+                        <div class="absolute bottom-4 right-4 w-32 md:w-48 aspect-video bg-black rounded-xl overflow-hidden border-2 border-vibe-primary">
+                            <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                            <div class="absolute top-2 right-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/50 backdrop-blur-xl px-6 py-3 rounded-full border border-vibe-border">
+                            <button onclick="toggleMute()" id="mute-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                                <i class="fa-solid fa-microphone text-white"></i>
+                            </button>
+                            <button onclick="toggleVideo()" id="video-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                                <i class="fa-solid fa-video text-white"></i>
+                            </button>
+                            <button onclick="endCall()" class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors">
+                                <i class="fa-solid fa-phone-slash text-white"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Loading Overlay -->
+                        <div id="video-loading" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10">
+                            <div class="loading-dots mb-4">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            <p class="text-vibe-primary font-bold">Finding your match...</p>
+                            <p class="text-sm text-gray-400 mt-2">Checking interests and location</p>
+                        </div>
                     </div>
                 </div>
-                <button onclick="closeModal()" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white active:scale-90">
+                
+                <!-- Chat Area -->
+                <div id="text-chat-container" class="lg:col-span-2 hidden">
+                    <div class="glass-card h-full flex flex-col">
+                        <!-- Chat Header -->
+                        <div class="p-6 border-b border-vibe-border flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center">
+                                    <i class="fa-solid fa-user-secret"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold">Anonymous Chat</h3>
+                                    <p class="text-xs text-gray-400" id="chat-status">Connecting...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button onclick="requestVideoCall()" id="video-request-btn" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                                    <i class="fa-solid fa-video"></i>
+                                </button>
+                                <button onclick="nextPartner()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                                    <i class="fa-solid fa-arrow-rotate-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Messages -->
+                        <div id="messages-container" class="flex-1 p-6 overflow-y-auto">
+                            <div class="space-y-4" id="messages">
+                                <!-- Messages will appear here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Input Area -->
+                        <div class="p-6 border-t border-vibe-border">
+                            <div class="flex gap-3">
+                                <textarea id="message-input" rows="1" placeholder="Type your message..." class="flex-1 bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none resize-none" disabled></textarea>
+                                <button onclick="sendMessage()" id="send-btn" class="btn-primary w-14 h-14 rounded-xl flex items-center justify-center" disabled>
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <div class="flex justify-between mt-3">
+                                <div class="text-xs text-gray-500">
+                                    Press <kbd class="px-2 py-1 bg-black/30 rounded">Enter</kbd> to send
+                                </div>
+                                <button onclick="endChat()" class="text-sm text-red-400 hover:text-red-300">
+                                    <i class="fa-solid fa-power-off mr-1"></i> End Chat
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Side Panel -->
+                <div class="lg:col-span-1">
+                    <div class="glass-card h-full p-6 flex flex-col">
+                        <h3 class="text-xl font-bold mb-6">Your Vibe</h3>
+                        
+                        <!-- Profile -->
+                        <div class="mb-8">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center text-2xl">
+                                    <i class="fa-solid fa-user"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold" id="user-name">Anonymous</h4>
+                                    <p class="text-sm text-gray-400">Online</p>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Interests</label>
+                                    <div class="flex flex-wrap gap-2" id="interests-tags">
+                                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#chat</span>
+                                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#global</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="space-y-4 mb-8">
+                            <h4 class="font-bold">Quick Actions</h4>
+                            <button onclick="toggleTheme()" class="w-full btn-secondary py-3 rounded-xl flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-palette"></i> Toggle Theme
+                            </button>
+                            <button onclick="openSafety()" class="w-full btn-secondary py-3 rounded-xl flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-shield"></i> Safety Guide
+                            </button>
+                        </div>
+                        
+                        <!-- Stats -->
+                        <div class="mt-auto">
+                            <h4 class="font-bold mb-4">Session Stats</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Time</span>
+                                    <span class="font-bold" id="session-time">0:00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Messages</span>
+                                    <span class="font-bold" id="message-count">0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">Partner</span>
+                                    <span class="font-bold" id="partner-count">1</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
+            <div class="p-6 border-b border-vibe-border flex items-center justify-between">
+                <h2 class="text-2xl font-bold">Chat Settings</h2>
+                <button onclick="closeSettings()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div id="modalBody" class="p-10 md:p-12 overflow-y-auto text-readable-body text-lg leading-relaxed max-h-[70vh]"></div>
-        </div>
-    </div>
-
-    <!-- ==================== MAIN PAGES ==================== -->
-    
-    <!-- Homepage (Visible by default) -->
-    <main id="homePage" class="relative pt-48 pb-16 px-6 max-w-6xl mx-auto flex flex-col items-center">
-        <!-- Hero Section -->
-        <div class="text-center w-full max-w-5xl mb-24 flex flex-col items-center">
-            <h1 class="font-display text-6xl sm:text-7xl md:text-[120px] font-extrabold tracking-tighter leading-[0.8] mb-12 shimmer-liquid">
-                KONEK <br/>
-                IN A <span class="text-vibe-yellow">FLASH.</span>
-            </h1>
-            <p class="text-readable-body text-xl sm:text-2xl md:text-4xl font-light leading-snug px-4 max-w-4xl">
-                Sync with the speed of <span class="text-vibe-yellow font-bold italic">Vibe.</span> Hyper-fast, anonymous, and unfiltered. <span class="text-white font-medium">No accounts, no noise.</span> Just real connection on a global layer.
-            </p>
-        </div>
-
-        <!-- Action Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 w-full max-w-6xl mb-24">
-            <div class="md:col-span-8 md:row-span-2 glass-hyper rounded-[4rem] p-10 md:p-16 flex flex-col justify-between overflow-hidden relative group min-h-[500px] transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-vibe-yellow/40">
-                <div class="relative z-10">
-                    <div class="flex items-center gap-4 mb-10">
-                        <i class="fa-solid fa-bolt-lightning text-vibe-yellow text-3xl animate-pulse"></i>
-                        <span class="text-xs font-black uppercase tracking-[0.5em] text-vibe-yellow">Live Node Sync</span>
+            
+            <div class="p-6 space-y-6">
+                <!-- Profile -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Your Profile</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-gray-400 block mb-2">Display Name</label>
+                            <input type="text" id="display-name" placeholder="Anonymous" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none" />
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-gray-400 block mb-2">Gender</label>
+                            <select id="gender-select" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none">
+                                <option value="any">Any</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="text-sm text-gray-400 block mb-2">Interests (comma separated)</label>
+                            <input type="text" id="interests-input" placeholder="music, gaming, tech" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none" />
+                        </div>
                     </div>
-                    <h2 class="font-display text-5xl md:text-8xl font-extrabold tracking-tighter mb-8 text-white leading-tight">Enter the <br/>Vibe</h2>
-                    <p class="text-readable-body text-xl md:text-2xl leading-relaxed max-w-md font-light">Instantly pair with the world. Your identity stays yours, your data vanishes on exit.</p>
-                </div>
-
-                <div class="flex flex-col md:flex-row gap-5 mt-14 relative z-10 w-full">
-                    <button onclick="openSetup('chat')" class="btn-liquid flex-1 px-4 py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all min-w-0">
-                        <i class="fa-solid fa-comments text-2xl"></i>
-                        <span class="truncate">Chat</span>
-                    </button>
-                    <button onclick="openSetup('audio')" class="bg-vibe-cyan text-vibe-black flex-1 px-4 py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all min-w-0">
-                        <i class="fa-solid fa-microphone text-2xl"></i>
-                        <span class="truncate">Audio</span>
-                    </button>
-                    <button onclick="openSetup('video')" class="bg-white text-black flex-1 px-4 py-7 rounded-[2rem] font-black text-sm uppercase tracking-[0.4em] flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all min-w-0">
-                        <i class="fa-solid fa-video text-2xl"></i>
-                        <span class="truncate">Video</span>
-                    </button>
                 </div>
                 
-                <i class="fa-solid fa-bolt absolute -bottom-32 -right-32 text-[400px] md:text-[550px] text-white/[0.03] group-hover:text-vibe-yellow/[0.07] transition-all duration-1000 rotate-[15deg]"></i>
-            </div>
-
-            <!-- Side Features -->
-            <div class="md:col-span-4 glass-hyper rounded-[3.5rem] p-10 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] hover:border-vibe-cyan/40">
-                <div class="w-16 h-16 rounded-2xl bg-vibe-cyan/20 border border-vibe-cyan/30 flex items-center justify-center text-vibe-cyan text-3xl">
-                    <i class="fa-solid fa-fingerprint"></i>
-                </div>
-                <div class="mt-12">
-                    <h3 class="font-display font-extrabold text-3xl mb-3 text-white">Stealth Mode</h3>
-                    <p class="text-readable-muted text-base leading-relaxed">Hardware-isolated anonymity. No trace, no tracking left behind.</p>
-                </div>
-            </div>
-
-            <div class="md:col-span-4 glass-hyper rounded-[3.5rem] p-10 flex flex-col justify-between transition-all duration-500 hover:-translate-y-2 hover:scale-[1.02] hover:border-vibe-purple/40">
-                <div class="w-16 h-16 rounded-2xl bg-vibe-purple/20 border border-vibe-purple/30 flex items-center justify-center text-vibe-purple text-3xl">
-                    <i class="fa-solid fa-gauge-high"></i>
-                </div>
-                <div class="mt-12">
-                    <h3 class="font-display font-extrabold text-3xl mb-3 text-white">Edge Sync</h3>
-                    <p class="text-readable-muted text-base leading-relaxed">Ultra-low latency pairing powered by next-gen global nodes.</p>
-                </div>
-            </div>
-
-            <div class="md:col-span-12 glass-hyper rounded-[4rem] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-12 transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-white/20">
-                <div class="flex flex-col sm:flex-row items-center gap-12 md:gap-24">
-                    <div class="group text-center sm:text-left">
-                        <span class="block text-5xl md:text-6xl font-display font-black text-vibe-yellow group-hover:scale-110 transition-transform">9M+</span>
-                        <span class="text-[11px] uppercase tracking-[0.5em] text-white/50 font-black mt-3">Daily Vibes</span>
-                    </div>
-                    <div class="h-16 w-px bg-white/10 hidden sm:block"></div>
-                    <div class="text-center sm:text-left">
-                        <span class="block text-5xl md:text-6xl font-display font-black text-vibe-cyan">182</span>
-                        <span class="text-[11px] uppercase tracking-[0.5em] text-white/50 font-black mt-3">Country Nodes</span>
-                    </div>
-                </div>
-                <div class="flex -space-x-5">
-                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-vibe-cyan flex items-center justify-center text-sm font-black">V1</div>
-                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-vibe-yellow flex items-center justify-center text-sm font-black text-black">K1</div>
-                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-vibe-pink flex items-center justify-center text-sm font-black">V2</div>
-                    <div class="w-16 h-16 rounded-full border-4 border-vibe-black bg-white/10 backdrop-blur-2xl flex items-center justify-center text-[12px] font-black border-white/10 text-white">+12k</div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- ==================== CHAT/AUDIO/VIDEO SCREENS (HIDDEN) ==================== -->
-    
-    <!-- 1v1 Chat Screen -->
-    <div id="chatScreen" class="hidden fixed inset-0 z-40 bg-vibe-black">
-        <div class="container mx-auto px-4 h-full flex flex-col py-20">
-            <!-- Chat Header -->
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-4">
-                    <button onclick="showPage('home')" class="w-12 h-12 glass-hyper rounded-full flex items-center justify-center hover:scale-105 transition-transform">
-                        <i class="fa-solid fa-arrow-left text-vibe-yellow"></i>
-                    </button>
-                    <div>
-                        <h2 class="font-display text-2xl font-bold text-white">Chat Room</h2>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div id="partnerStatus" class="w-2 h-2 rounded-full bg-vibe-green animate-pulse"></div>
-                            <span id="partnerName" class="text-sm text-vibe-cyan">Stranger</span>
-                            <div id="commonInterests" class="flex gap-1"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button onclick="toggleMute()" id="muteBtn" class="w-10 h-10 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-microphone text-white"></i>
-                    </button>
-                    <button onclick="leaveChat()" class="w-10 h-10 glass-hyper rounded-full flex items-center justify-center hover:scale-105 bg-vibe-red/20 border-vibe-red/30">
-                        <i class="fa-solid fa-phone-slash text-vibe-red"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Chat Container -->
-            <div class="flex-1 glass-hyper rounded-3xl overflow-hidden flex flex-col">
-                <!-- Messages Area -->
-                <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-4">
-                    <!-- Messages will appear here -->
-                    <div class="text-center text-vibe-cyan/60 py-8">
-                        <i class="fa-solid fa-comment-dots text-4xl mb-3"></i>
-                        <p class="text-sm">Connected to mesh network. Start chatting!</p>
-                    </div>
-                </div>
-
-                <!-- Typing Indicator -->
-                <div id="typingIndicator" class="hidden px-6 py-2">
-                    <div class="flex items-center gap-2 text-vibe-cyan text-sm">
-                        <div class="flex gap-1">
-                            <div class="w-2 h-2 bg-vibe-cyan rounded-full animate-typing-dots"></div>
-                            <div class="w-2 h-2 bg-vibe-cyan rounded-full animate-typing-dots" style="animation-delay: 0.2s"></div>
-                            <div class="w-2 h-2 bg-vibe-cyan rounded-full animate-typing-dots" style="animation-delay: 0.4s"></div>
-                        </div>
-                        <span id="typingName">Someone</span> is typing...
-                    </div>
-                </div>
-
-                <!-- Input Area -->
-                <div class="border-t border-white/10 p-4">
-                    <div class="flex items-center gap-3">
-                        <label class="w-10 h-10 glass-hyper rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform">
-                            <i class="fa-solid fa-paperclip text-vibe-yellow"></i>
-                            <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf,.doc,.txt">
-                        </label>
-                        <div class="flex-1 relative">
-                            <input type="text" id="messageInput" 
-                                   placeholder="Type your message..." 
-                                   class="w-full glass-hyper py-3 px-4 rounded-full pr-12 focus:outline-none focus:border-vibe-yellow">
-                            <button onclick="sendMessage()" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-vibe-yellow rounded-full flex items-center justify-center hover:scale-105">
-                                <i class="fa-solid fa-paper-plane text-black"></i>
-                            </button>
-                        </div>
-                        <button onclick="nextPartner()" class="w-10 h-10 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                            <i class="fa-solid fa-rotate text-vibe-cyan"></i>
+                <!-- Chat Mode -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Connection Mode</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="selectMode('text')" id="text-mode-btn" class="p-6 rounded-2xl border-2 border-vibe-primary bg-vibe-primary/10 flex flex-col items-center justify-center gap-3">
+                            <i class="fa-solid fa-comments text-3xl text-vibe-primary"></i>
+                            <span class="font-bold">Text Chat</span>
+                        </button>
+                        
+                        <button onclick="selectMode('video')" id="video-mode-btn" class="p-6 rounded-2xl border-2 border-vibe-border bg-white/5 flex flex-col items-center justify-center gap-3 hover:border-vibe-primary transition-colors">
+                            <i class="fa-solid fa-video text-3xl text-gray-400"></i>
+                            <span class="font-bold">Video Call</span>
                         </button>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 1v1 Video Screen -->
-    <div id="videoScreen" class="hidden fixed inset-0 z-40 bg-vibe-black">
-        <div class="container mx-auto px-4 h-full flex flex-col py-4">
-            <!-- Video Header -->
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-4">
-                    <button onclick="showPage('home')" class="w-12 h-12 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-arrow-left text-vibe-yellow"></i>
-                    </button>
-                    <div>
-                        <h2 class="font-display text-xl font-bold text-white">Video Call</h2>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div id="videoPartnerStatus" class="w-2 h-2 rounded-full bg-vibe-green animate-pulse"></div>
-                            <span id="videoPartnerName" class="text-sm text-vibe-cyan">Stranger</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div id="videoCommonInterests" class="flex gap-1"></div>
-                    <div id="videoPartnerInfo" class="text-xs text-white/60 hidden">
-                        <span id="partnerGender"></span> • <span id="partnerLocation"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video Container -->
-            <div class="flex-1 relative rounded-3xl overflow-hidden">
-                <!-- Remote Video -->
-                <video id="remoteVideo" autoplay playsinline class="w-full h-full object-cover bg-vibe-black"></video>
                 
-                <!-- Local Video (PiP) -->
-                <div class="absolute bottom-4 right-4 w-48 h-32 bg-vibe-black rounded-xl overflow-hidden border-2 border-vibe-yellow">
-                    <video id="localVideo" autoplay playsinline muted class="w-full h-full object-cover"></video>
-                    <div class="absolute top-2 left-2 px-2 py-1 bg-black/50 rounded text-xs text-white">
-                        You
+                <!-- Start Button -->
+                <button onclick="startChat()" class="w-full btn-primary py-4 rounded-xl text-lg font-bold flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-play"></i> Start Connection
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Safety Modal -->
+    <div id="safety-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
+            <div class="p-6 border-b border-vibe-border flex items-center justify-between">
+                <h2 class="text-2xl font-bold">Safety Guidelines</h2>
+                <button onclick="closeSafety()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-6">
+                <div class="space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-user-secret text-red-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold mb-1">Protect Your Identity</h4>
+                            <p class="text-gray-400 text-sm">Never share personal information like your real name, address, phone number, or financial details.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-flag text-yellow-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold mb-1">Report Inappropriate Behavior</h4>
+                            <p class="text-gray-400 text-sm">Use the report button if you encounter harassment, bullying, or inappropriate content.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-hand text-green-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold mb-1">You're In Control</h4>
+                            <p class="text-gray-400 text-sm">You can disconnect at any time. Don't feel pressured to continue uncomfortable conversations.</p>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Controls -->
-                <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
-                    <button onclick="toggleVideo()" id="videoToggle" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-video text-white text-xl"></i>
-                    </button>
-                    <button onclick="toggleMute()" id="audioToggle" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-microphone text-white text-xl"></i>
-                    </button>
-                    <button onclick="toggleScreenShare()" id="screenShare" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-display text-white text-xl"></i>
-                    </button>
-                    <button onclick="leaveVideoCall()" class="w-14 h-14 bg-vibe-red rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-phone-slash text-white text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- Status Overlay -->
-                <div id="videoStatus" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                    <div class="loader mb-4"><span></span><span></span><span></span></div>
-                    <p class="text-vibe-yellow font-bold tracking-widest animate-pulse">CONNECTING...</p>
-                </div>
-            </div>
-
-            <!-- Chat Panel (Collapsible) -->
-            <div id="videoChatPanel" class="mt-4 glass-hyper rounded-3xl p-4 max-h-64 overflow-hidden transition-all duration-300">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-bold text-white">Chat</h3>
-                    <button onclick="toggleChatPanel()" class="text-vibe-cyan">
-                        <i class="fa-solid fa-chevron-up"></i>
-                    </button>
-                </div>
-                <div id="videoChatMessages" class="overflow-y-auto max-h-32 mb-3 space-y-2">
-                    <!-- Video chat messages -->
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="videoChatInput" placeholder="Type message..." class="flex-1 glass-hyper py-2 px-3 rounded-full text-sm">
-                    <button onclick="sendVideoChat()" class="w-8 h-8 bg-vibe-yellow rounded-full flex items-center justify-center">
-                        <i class="fa-solid fa-paper-plane text-black text-sm"></i>
-                    </button>
+                
+                <div class="pt-6 border-t border-vibe-border">
+                    <p class="text-sm text-gray-500">
+                        By using Vibe Konek, you agree to our 
+                        <a href="#" class="text-vibe-primary hover:underline">Terms of Service</a> and 
+                        <a href="#" class="text-vibe-primary hover:underline">Privacy Policy</a>.
+                    </p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Group Video/Audio Room -->
-    <div id="groupScreen" class="hidden fixed inset-0 z-40 bg-vibe-black">
-        <div class="container mx-auto px-4 h-full flex flex-col py-4">
-            <!-- Group Header -->
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-4">
-                    <button onclick="showPage('home')" class="w-12 h-12 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                        <i class="fa-solid fa-arrow-left text-vibe-yellow"></i>
-                    </button>
-                    <div>
-                        <h2 class="font-display text-xl font-bold text-white">Group Session</h2>
-                        <div class="flex items-center gap-2 mt-1">
-                            <div class="w-2 h-2 rounded-full bg-vibe-green animate-pulse"></div>
-                            <span class="text-sm text-vibe-cyan"><span id="participantCount">1</span> Participants</span>
-                        </div>
-                    </div>
-                </div>
+    
+    <!-- End Chat Modal -->
+    <div id="end-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-md w-full p-8 text-center animate-slide-up">
+            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center mx-auto mb-6">
+                <i class="fa-solid fa-link-slash text-white text-3xl"></i>
+            </div>
+            
+            <h3 class="text-2xl font-bold mb-3" id="end-title">Chat Ended</h3>
+            <p class="text-gray-400 mb-8" id="end-message">Your connection has been disconnected.</p>
+            
+            <div class="space-y-3">
+                <button onclick="nextPartner()" class="w-full btn-primary py-4 rounded-xl font-bold">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Find New Partner
+                </button>
+                <button onclick="goHome()" class="w-full btn-secondary py-4 rounded-xl font-bold">
+                    <i class="fa-solid fa-home mr-2"></i> Return Home
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="py-8 px-4 border-t border-vibe-border bg-black/30">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div class="flex items-center gap-3">
-                    <button onclick="inviteToGroup()" class="px-4 py-2 glass-hyper rounded-full text-sm hover:scale-105">
-                        <i class="fa-solid fa-user-plus mr-2"></i>Invite
-                    </button>
-                    <button onclick="leaveGroup()" class="px-4 py-2 bg-vibe-red/20 border border-vibe-red/30 rounded-full text-sm hover:scale-105">
-                        <i class="fa-solid fa-sign-out-alt mr-2"></i>Leave
-                    </button>
-                </div>
-            </div>
-
-            <!-- Participants Grid -->
-            <div id="participantsGrid" class="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Participants will be added here -->
-                <div class="participant-tile flex items-center justify-center">
-                    <div class="text-center">
-                        <div class="w-20 h-20 rounded-full bg-vibe-cyan/20 flex items-center justify-center mb-3">
-                            <i class="fa-solid fa-user text-vibe-cyan text-3xl"></i>
-                        </div>
-                        <p class="text-white font-semibold">You</p>
-                        <p class="text-xs text-vibe-cyan">Host</p>
+                    <div class="w-10 h-10 rounded-xl glass-card flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-vibe-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-bold">Vibe Konek 2.0</h3>
+                        <p class="text-xs text-gray-500">Anonymous Connections Redefined</p>
                     </div>
                 </div>
-            </div>
-
-            <!-- Group Controls -->
-            <div class="mt-4 flex justify-center gap-6">
-                <button onclick="toggleGroupVideo()" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                    <i class="fa-solid fa-video text-white text-xl"></i>
-                </button>
-                <button onclick="toggleGroupAudio()" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                    <i class="fa-solid fa-microphone text-white text-xl"></i>
-                </button>
-                <button onclick="toggleGroupScreenShare()" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                    <i class="fa-solid fa-display text-white text-xl"></i>
-                </button>
-                <button onclick="toggleGroupChat()" class="w-14 h-14 glass-hyper rounded-full flex items-center justify-center hover:scale-105">
-                    <i class="fa-solid fa-comment text-white text-xl"></i>
-                </button>
+                
+                <div class="flex flex-wrap gap-6 text-sm">
+                    <button onclick="openSafety()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-shield mr-2"></i> Safety
+                    </button>
+                    <button onclick="openFirebaseConfig()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-database mr-2"></i> Firebase Setup
+                    </button>
+                    <a href="https://github.com" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fab fa-github mr-2"></i> GitHub
+                    </a>
+                </div>
+                
+                <div class="text-sm text-gray-500">
+                    © 2025 Vibe Konek 2.0. All rights reserved.
+                </div>
             </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- ==================== JAVASCRIPT ==================== -->
     <script>
-
-        // --- GLOBAL STATE ---
-        const socket = io("https://vibe-konek-core.onrender.com");
-        
-        let currentMode = null; // 'chat', 'audio', 'video', 'group'
-        let currentRoom = null;
-        let currentPartner = null;
-        let currentUser = {
-            id: null,
-            name: 'Guest',
-            gender: 'Not specified',
-            interests: [],
-            location: 'Global'
-        };
-        
-        let isConnected = false;
-        let isMuted = false;
-        let isVideoOff = false;
-        let isScreenSharing = false;
-        
-        // WebRTC
-        let localStream = null;
+        // Firebase Configuration
+        let firebaseConfig = null;
+        let db = null;
+        let auth = null;
+        let currentUser = null;
         let peerConnection = null;
-        let dataChannel = null;
+        let localStream = null;
+        let remoteStream = null;
         
-        // Typing
-        let typingTimeout = null;
-        let partnerTyping = false;
-        
-        // File handling
-        let pendingFile = null;
-        
-        // --- DOM ELEMENTS ---
-        const homePage = document.getElementById('homePage');
-        const chatScreen = document.getElementById('chatScreen');
-        const videoScreen = document.getElementById('videoScreen');
-        const groupScreen = document.getElementById('groupScreen');
-        
-        // --- UI FUNCTIONS ---
-        function showPage(page) {
-            // Hide all pages
-            homePage.classList.add('hidden');
-            chatScreen.classList.add('hidden');
-            videoScreen.classList.add('hidden');
-            groupScreen.classList.add('hidden');
-            
-            // Stop any active connections
-            if (page !== currentMode) {
-                stopConnection();
-            }
-            
-            // Show requested page
-            switch(page) {
-                case 'home':
-                    homePage.classList.remove('hidden');
-                    break;
-                case 'chat':
-                    chatScreen.classList.remove('hidden');
-                    break;
-                case 'video':
-                    videoScreen.classList.remove('hidden');
-                    break;
-                case 'group':
-                    groupScreen.classList.remove('hidden');
-                    break;
-            }
-            
-            // Update header visibility
-            const header = document.getElementById('mainHeader');
-            if (page === 'home') {
-                header.classList.remove('opacity-0', 'pointer-events-none');
-            } else {
-                header.classList.add('opacity-0', 'pointer-events-none');
-            }
-        }
-        
-        function openSetup(mode) {
-            currentMode = mode;
-            openModal('settings');
-        }
-        
-        // --- MODAL FUNCTIONS (From original) ---
-        const modalData = {
-            settings: { 
-                title: "Configure Connection", 
-                icon: "fa-sliders", 
-                content: `
-                    <div class="space-y-6">
-                        <div>
-                            <label class="text-xs font-bold text-vibe-yellow uppercase tracking-wider mb-2 block">Display Name</label>
-                            <input type="text" id="userName" placeholder="Anonymous" 
-                                   class="w-full glass-hyper py-3 px-4 rounded-xl focus:outline-none focus:border-vibe-yellow">
-                        </div>
-                        
-                        <div>
-                            <label class="text-xs font-bold text-vibe-yellow uppercase tracking-wider mb-2 block">Your Interests</label>
-                            <input type="text" id="userInterests" placeholder="Gaming, Music, Tech, Anime..." 
-                                   class="w-full glass-hyper py-3 px-4 rounded-xl focus:outline-none focus:border-vibe-yellow">
-                            <p class="text-xs text-white/50 mt-1">Separate with commas. We'll match you with people who share similar interests.</p>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs font-bold text-vibe-yellow uppercase tracking-wider mb-2 block">Gender</label>
-                                <select id="userGender" class="w-full glass-hyper py-3 px-4 rounded-xl">
-                                    <option value="not_specified">Not specified</option>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                    <option value="non_binary">Non-binary</option>
-                                    <option value="prefer_not">Prefer not to say</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs font-bold text-vibe-yellow uppercase tracking-wider mb-2 block">Connection Type</label>
-                                <select id="connectionType" class="w-full glass-hyper py-3 px-4 rounded-xl">
-                                    <option value="1v1">One-on-One</option>
-                                    <option value="group">Group Session</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="pt-4 border-t border-white/10">
-                            <button onclick="startConnection()" class="w-full btn-liquid py-4 rounded-xl font-bold text-lg">
-                                <i class="fa-solid fa-bolt mr-2"></i> Start Connection
-                            </button>
-                            <p class="text-xs text-white/50 text-center mt-3">
-                                By connecting, you agree to our 
-                                <button onclick="openModal('terms')" class="text-vibe-yellow hover:underline">Terms</button> 
-                                and 
-                                <button onclick="openModal('privacy')" class="text-vibe-yellow hover:underline">Privacy Policy</button>
-                            </p>
-                        </div>
-                    </div>
-                ` 
-            },
-            // ... other modals (terms, privacy, etc.)
+        // App State
+        let appState = {
+            currentMode: null, // 'text' or 'video'
+            isConnected: false,
+            isMuted: false,
+            isVideoOff: false,
+            partnerId: null,
+            chatRoomId: null,
+            userName: 'Anonymous',
+            userInterests: ['chat', 'global'],
+            sessionStart: null,
+            messageCount: 0,
+            partnerCount: 0
         };
         
-        function openModal(key) {
-            const data = modalData[key];
-            if (!data) return;
-            
-            document.getElementById('modalTitle').innerText = data.title;
-            document.getElementById('modalIcon').className = `fa-solid ${data.icon} text-vibe-yellow text-2xl`;
-            document.getElementById('modalBody').innerHTML = data.content;
-            
-            const overlay = document.getElementById('modalOverlay');
-            const modalBox = overlay.querySelector('.modal-box');
-            
-            overlay.classList.add('opacity-100', 'pointer-events-auto');
-            modalBox.classList.remove('scale-90');
-            modalBox.classList.add('scale-100');
-            document.body.classList.add('no-scroll');
-            
-            // Pre-fill if returning to settings
-            if (key === 'settings') {
-                document.getElementById('userName').value = currentUser.name;
-                document.getElementById('userInterests').value = currentUser.interests.join(', ');
-                document.getElementById('userGender').value = currentUser.gender;
-            }
-        }
+        // DOM Elements
+        const setupModal = document.getElementById('setup-modal');
+        const settingsModal = document.getElementById('settings-modal');
+        const safetyModal = document.getElementById('safety-modal');
+        const endModal = document.getElementById('end-modal');
+        const homeSection = document.getElementById('home-section');
+        const featuresSection = document.getElementById('features-section');
+        const chatSection = document.getElementById('chat-section');
+        const videoContainer = document.getElementById('video-container');
+        const textChatContainer = document.getElementById('text-chat-container');
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
         
-        function closeModal() {
-            const overlay = document.getElementById('modalOverlay');
-            const modalBox = overlay.querySelector('.modal-box');
+        // Initialize Firebase from localStorage or show setup modal
+        function initFirebase() {
+            const savedConfig = localStorage.getItem('vibekonek_firebase_config');
             
-            overlay.classList.remove('opacity-100', 'pointer-events-auto');
-            modalBox.classList.remove('scale-100');
-            modalBox.classList.add('scale-90');
-            document.body.classList.remove('no-scroll');
-        }
-        
-        function handleOverlayClick(e) {
-            if (e.target === document.getElementById('modalOverlay')) {
-                closeModal();
-            }
-        }
-        
-        // --- CONNECTION LOGIC ---
-        function startConnection() {
-            // Get user settings
-            currentUser.name = document.getElementById('userName').value.trim() || 'Anonymous';
-            currentUser.interests = document.getElementById('userInterests').value.split(',').map(i => i.trim()).filter(i => i);
-            currentUser.gender = document.getElementById('userGender').value;
-            const connectionType = document.getElementById('connectionType').value;
-            
-            closeModal();
-            
-            // Show connecting overlay
-            const overlay = document.getElementById('connectingOverlay');
-            overlay.classList.remove('opacity-0', 'pointer-events-none');
-            overlay.classList.add('opacity-100');
-            
-            // Update loading status
-            const statusText = document.getElementById('loadingStatusText');
-            const technicalLog = document.getElementById('technicalLog');
-            const statuses = ["Authenticating Node", "P2P Handshake", "Signal Mesh Sync", "Encryption Lock", "Finding Peers"];
-            const logs = [
-                "Tunneling WebRTC Layer...",
-                "Negotiating ICE Candidates...",
-                "AES-256 Key Exchange...",
-                "Routing through Global Mesh...",
-                "Establishing Direct Tunnel..."
-            ];
-            
-            let counter = 0;
-            const loadingInterval = setInterval(() => {
-                counter = (counter + 1) % statuses.length;
-                statusText.innerText = statuses[counter];
-                technicalLog.innerText = logs[counter];
-            }, 1200);
-            
-            // Emit connection request
-            setTimeout(() => {
-                clearInterval(loadingInterval);
-                overlay.classList.add('opacity-0', 'pointer-events-none');
-                
-                // For demo: Simulate connection
-                if (connectionType === '1v1') {
-                    if (currentMode === 'chat') {
-                        simulateChatConnection();
-                    } else if (currentMode === 'video') {
-                        simulateVideoConnection();
-                    } else if (currentMode === 'audio') {
-                        simulateAudioConnection();
-                    }
-                } else {
-                    simulateGroupConnection();
+            if (savedConfig) {
+                try {
+                    firebaseConfig = JSON.parse(savedConfig);
+                    initializeFirebaseApp();
+                    return true;
+                } catch (e) {
+                    console.error('Error loading Firebase config:', e);
+                    localStorage.removeItem('vibekonek_firebase_config');
+                    showSetupModal();
+                    return false;
                 }
-            }, 5000);
-        }
-        
-        function simulateChatConnection() {
-            currentPartner = {
-                id: 'partner_' + Date.now(),
-                name: 'Stranger',
-                gender: 'Unknown',
-                interests: ['Gaming', 'Music'],
-                location: 'Unknown'
-            };
-            
-            // Show chat screen
-            showPage('chat');
-            
-            // Update UI
-            document.getElementById('partnerName').textContent = currentPartner.name;
-            document.getElementById('partnerStatus').className = 'w-2 h-2 rounded-full bg-vibe-green';
-            
-            // Show common interests
-            const commonInterests = currentUser.interests.filter(i => 
-                currentPartner.interests.map(pi => pi.toLowerCase()).includes(i.toLowerCase())
-            );
-            updateInterestTags(commonInterests, 'commonInterests');
-            
-            // Add welcome message
-            addSystemMessage(`Connected to ${currentPartner.name}. You both share interests in ${commonInterests.join(', ')}.`);
-            
-            isConnected = true;
-            
-            // Simulate partner typing
-            setTimeout(() => {
-                document.getElementById('typingIndicator').classList.remove('hidden');
-                document.getElementById('typingName').textContent = currentPartner.name;
-                
-                setTimeout(() => {
-                    document.getElementById('typingIndicator').classList.add('hidden');
-                    addMessage('Hey there! Nice to meet you. How are you?', false);
-                }, 2000);
-            }, 1000);
-        }
-        
-        function simulateVideoConnection() {
-            currentPartner = {
-                id: 'partner_' + Date.now(),
-                name: 'Alex',
-                gender: 'Non-binary',
-                interests: ['Tech', 'Music'],
-                location: 'USA'
-            };
-            
-            // Show video screen
-            showPage('video');
-            
-            // Update UI
-            document.getElementById('videoPartnerName').textContent = currentPartner.name;
-            document.getElementById('videoPartnerStatus').className = 'w-2 h-2 rounded-full bg-vibe-green';
-            document.getElementById('partnerGender').textContent = currentPartner.gender;
-            document.getElementById('partnerLocation').textContent = currentPartner.location;
-            document.getElementById('videoPartnerInfo').classList.remove('hidden');
-            
-            // Show common interests
-            const commonInterests = currentUser.interests.filter(i => 
-                currentPartner.interests.map(pi => pi.toLowerCase()).includes(i.toLowerCase())
-            );
-            updateInterestTags(commonInterests, 'videoCommonInterests');
-            
-            // Hide status overlay
-            setTimeout(() => {
-                document.getElementById('videoStatus').style.display = 'none';
-            }, 2000);
-            
-            isConnected = true;
-            
-            // Request media if not already
-            if (!localStream) {
-                requestMedia();
-            }
-        }
-        
-        function simulateGroupConnection() {
-            showPage('group');
-            
-            // Add mock participants
-            const participants = [
-                { name: 'You', role: 'Host' },
-                { name: 'Alex', role: 'Member' },
-                { name: 'Sam', role: 'Member' },
-                { name: 'Jordan', role: 'Member' }
-            ];
-            
-            updateParticipantGrid(participants);
-            document.getElementById('participantCount').textContent = participants.length;
-        }
-        
-        // --- MEDIA HANDLING ---
-        async function requestMedia() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    video: currentMode === 'video' || currentMode === 'group',
-                    audio: true
-                });
-                
-                if (currentMode === 'video' && document.getElementById('localVideo')) {
-                    document.getElementById('localVideo').srcObject = localStream;
-                }
-                
-                return true;
-            } catch (err) {
-                console.error('Media error:', err);
-                addSystemMessage('Unable to access camera/microphone. Please check permissions.');
+            } else {
+                showSetupModal();
                 return false;
             }
         }
         
-        // --- MESSAGE HANDLING ---
-        function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (!message || !isConnected) return;
-            
-            // Add message to UI
-            addMessage(message, true);
-            
-            // Clear input
-            input.value = '';
-            
-            // In real implementation, send via socket
-            // socket.emit('chat_message', { room: currentRoom, message });
-            
-            // Simulate response
-            setTimeout(() => {
-                if (isConnected) {
-                    const responses = [
-                        "That's interesting!",
-                        "I feel the same way.",
-                        "Tell me more about that.",
-                        "Nice to hear that from you.",
-                        "What do you think about this topic?"
-                    ];
-                    const response = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage(response, false);
-                }
-            }, 1000 + Math.random() * 2000);
+        function showSetupModal() {
+            setupModal.classList.remove('hidden');
         }
         
-        function sendVideoChat() {
-            const input = document.getElementById('videoChatInput');
-            const message = input.value.trim();
-            
-            if (!message || !isConnected) return;
-            
-            addVideoChatMessage(message, true);
-            input.value = '';
+        function skipFirebase() {
+            setupModal.classList.add('hidden');
+            alert('Running in demo mode. Real-time chat features will be simulated.');
         }
         
-        function addMessage(text, isMe) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
+        // Firebase Configuration Form
+        document.getElementById('config-form').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            messageDiv.className = `animate-slide-up ${isMe ? 'text-right' : ''}`;
-            messageDiv.innerHTML = `
-                <div class="inline-block max-w-[80%] ${isMe ? 'bubble-me' : 'bubble-them'} p-3">
-                    <div class="text-xs opacity-70 mb-1">${isMe ? 'You' : currentPartner?.name || 'Stranger'}</div>
-                    <div>${text}</div>
-                    <div class="text-xs opacity-50 text-right mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                </div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        function addVideoChatMessage(text, isMe) {
-            const messagesDiv = document.getElementById('videoChatMessages');
-            const messageDiv = document.createElement('div');
-            
-            messageDiv.className = `text-sm ${isMe ? 'text-right' : ''}`;
-            messageDiv.innerHTML = `
-                <div class="inline-block ${isMe ? 'bg-vibe-yellow text-black' : 'bg-white/10 text-white'} rounded-lg px-3 py-2 max-w-[80%]">
-                    <span class="font-semibold">${isMe ? 'You' : currentPartner?.name || 'Stranger'}:</span> ${text}
-                </div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        function addSystemMessage(text) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            
-            messageDiv.className = 'animate-fade-in text-center';
-            messageDiv.innerHTML = `
-                <div class="bubble-system inline-block px-4 py-2">
-                    <i class="fa-solid fa-info-circle mr-2"></i>${text}
-                </div>
-            `;
-            
-            messagesDiv.appendChild(messageDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        // --- FILE HANDLING ---
-        document.getElementById('fileInput')?.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            if (file.size > 10 * 1024 * 1024) { // 10MB limit
-                addSystemMessage('File too large (max 10MB)');
-                return;
-            }
-            
-            // Show file preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                displayFilePreview(file, e.target.result);
-                
-                // In real implementation, send file via WebRTC data channel
-                // sendFile(file, e.target.result);
+            firebaseConfig = {
+                apiKey: document.getElementById('fb-apiKey').value,
+                authDomain: document.getElementById('fb-authDomain').value,
+                projectId: document.getElementById('fb-projectId').value,
+                storageBucket: document.getElementById('fb-storageBucket').value || '',
+                messagingSenderId: document.getElementById('fb-messagingSenderId').value || '',
+                appId: document.getElementById('fb-appId').value
             };
             
-            if (file.type.startsWith('image/')) {
-                reader.readAsDataURL(file);
-            } else {
-                // For non-image files, just show file info
-                displayFilePreview(file, null);
-            }
-            
-            // Reset input
-            e.target.value = '';
+            localStorage.setItem('vibekonek_firebase_config', JSON.stringify(firebaseConfig));
+            initializeFirebaseApp();
+            setupModal.classList.add('hidden');
         });
         
-        function displayFilePreview(file, dataUrl) {
-            const messagesDiv = document.getElementById('chatMessages');
-            const previewDiv = document.createElement('div');
-            
-            previewDiv.className = 'animate-slide-up text-right';
-            
-            let previewHTML = `
-                <div class="inline-block bubble-me p-3 max-w-[80%]">
-                    <div class="text-xs opacity-70 mb-1">You sent a file</div>
-                    <div class="file-preview">
-            `;
-            
-            if (dataUrl && file.type.startsWith('image/')) {
-                previewHTML += `
-                    <img src="${dataUrl}" alt="${file.name}" class="max-w-full h-auto rounded-lg mb-2">
-                `;
-            }
-            
-            previewHTML += `
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-file text-vibe-yellow"></i>
-                            <div class="flex-1">
-                                <div class="font-semibold truncate">${file.name}</div>
-                                <div class="text-xs opacity-70">${formatFileSize(file.size)} • ${file.type}</div>
-                            </div>
-                            <a href="${dataUrl || '#'}" download="${file.name}" class="text-vibe-yellow hover:text-white">
-                                <i class="fa-solid fa-download"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="text-xs opacity-50 text-right mt-1">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                </div>
-            `;
-            
-            previewDiv.innerHTML = previewHTML;
-            messagesDiv.appendChild(previewDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-        
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-        
-        // --- UI UPDATES ---
-        function updateInterestTags(interests, elementId) {
-            const container = document.getElementById(elementId);
-            if (!container) return;
-            
-            container.innerHTML = '';
-            interests.slice(0, 3).forEach(interest => {
-                const tag = document.createElement('span');
-                tag.className = 'interest-tag text-xs';
-                tag.textContent = interest;
-                container.appendChild(tag);
-            });
-        }
-        
-        function updateParticipantGrid(participants) {
-            const grid = document.getElementById('participantsGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            participants.forEach(participant => {
-                const tile = document.createElement('div');
-                tile.className = 'participant-tile flex items-center justify-center';
-                tile.innerHTML = `
-                    <div class="text-center">
-                        <div class="w-20 h-20 rounded-full ${participant.role === 'Host' ? 'bg-vibe-yellow/20' : 'bg-vibe-cyan/20'} flex items-center justify-center mb-3">
-                            <i class="fa-solid fa-user ${participant.role === 'Host' ? 'text-vibe-yellow' : 'text-vibe-cyan'} text-3xl"></i>
-                        </div>
-                        <p class="text-white font-semibold">${participant.name}</p>
-                        <p class="text-xs ${participant.role === 'Host' ? 'text-vibe-yellow' : 'text-vibe-cyan'}">${participant.role}</p>
-                    </div>
-                `;
-                grid.appendChild(tile);
-            });
-        }
-        
-        // --- CONTROLS ---
-        function toggleMute() {
-            isMuted = !isMuted;
-            if (localStream) {
-                localStream.getAudioTracks().forEach(track => {
-                    track.enabled = !isMuted;
-                });
-            }
-            
-            const btn = document.getElementById('muteBtn') || document.getElementById('audioToggle');
-            if (btn) {
-                btn.innerHTML = isMuted 
-                    ? '<i class="fa-solid fa-microphone-slash text-vibe-red"></i>'
-                    : '<i class="fa-solid fa-microphone text-white"></i>';
+        function initializeFirebaseApp() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                auth = firebase.auth();
                 
-                if (isMuted) {
-                    btn.classList.add('bg-vibe-red/20', 'border-vibe-red/30');
-                } else {
-                    btn.classList.remove('bg-vibe-red/20', 'border-vibe-red/30');
+                // Sign in anonymously
+                auth.signInAnonymously()
+                    .then(() => {
+                        console.log('Firebase initialized successfully');
+                        updateOnlineCount();
+                    })
+                    .catch(error => {
+                        console.error('Firebase auth error:', error);
+                    });
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                alert('Firebase configuration error. Please check your settings.');
+                showSetupModal();
+            }
+        }
+        
+        function openFirebaseConfig() {
+            if (firebaseConfig) {
+                document.getElementById('fb-apiKey').value = firebaseConfig.apiKey || '';
+                document.getElementById('fb-authDomain').value = firebaseConfig.authDomain || '';
+                document.getElementById('fb-projectId').value = firebaseConfig.projectId || '';
+                document.getElementById('fb-storageBucket').value = firebaseConfig.storageBucket || '';
+                document.getElementById('fb-messagingSenderId').value = firebaseConfig.messagingSenderId || '';
+                document.getElementById('fb-appId').value = firebaseConfig.appId || '';
+            }
+            settingsModal.classList.add('hidden');
+            setupModal.classList.remove('hidden');
+        }
+        
+        // UI Functions
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+        }
+        
+        function openSettings() {
+            // Load current settings
+            document.getElementById('display-name').value = appState.userName;
+            document.getElementById('interests-input').value = appState.userInterests.join(', ');
+            
+            // Highlight current mode
+            const textBtn = document.getElementById('text-mode-btn');
+            const videoBtn = document.getElementById('video-mode-btn');
+            
+            textBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
+            textBtn.querySelector('i').classList.remove('text-vibe-primary');
+            textBtn.querySelector('i').classList.add('text-gray-400');
+            
+            videoBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
+            videoBtn.querySelector('i').classList.remove('text-vibe-primary');
+            videoBtn.querySelector('i').classList.add('text-gray-400');
+            
+            if (appState.currentMode === 'text') {
+                textBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
+                textBtn.querySelector('i').classList.remove('text-gray-400');
+                textBtn.querySelector('i').classList.add('text-vibe-primary');
+            } else if (appState.currentMode === 'video') {
+                videoBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
+                videoBtn.querySelector('i').classList.remove('text-gray-400');
+                videoBtn.querySelector('i').classList.add('text-vibe-primary');
+            }
+            
+            settingsModal.classList.remove('hidden');
+        }
+        
+        function closeSettings() {
+            settingsModal.classList.add('hidden');
+        }
+        
+        function openSafety() {
+            safetyModal.classList.remove('hidden');
+        }
+        
+        function closeSafety() {
+            safetyModal.classList.add('hidden');
+        }
+        
+        function selectMode(mode) {
+            appState.currentMode = mode;
+            
+            const textBtn = document.getElementById('text-mode-btn');
+            const videoBtn = document.getElementById('video-mode-btn');
+            
+            // Reset both buttons
+            textBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
+            textBtn.querySelector('i').classList.remove('text-vibe-primary');
+            textBtn.querySelector('i').classList.add('text-gray-400');
+            
+            videoBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
+            videoBtn.querySelector('i').classList.remove('text-vibe-primary');
+            videoBtn.querySelector('i').classList.add('text-gray-400');
+            
+            // Highlight selected mode
+            if (mode === 'text') {
+                textBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
+                textBtn.querySelector('i').classList.remove('text-gray-400');
+                textBtn.querySelector('i').classList.add('text-vibe-primary');
+            } else if (mode === 'video') {
+                videoBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
+                videoBtn.querySelector('i').classList.remove('text-gray-400');
+                videoBtn.querySelector('i').classList.add('text-vibe-primary');
+            }
+        }
+        
+        function startChat() {
+            // Save user settings
+            appState.userName = document.getElementById('display-name').value || 'Anonymous';
+            const interests = document.getElementById('interests-input').value;
+            appState.userInterests = interests ? interests.split(',').map(i => i.trim()).filter(i => i) : ['chat'];
+            
+            // Update UI
+            document.getElementById('user-name').textContent = appState.userName;
+            updateInterestsTags();
+            
+            // If no mode selected, default to text
+            if (!appState.currentMode) {
+                appState.currentMode = 'text';
+            }
+            
+            closeSettings();
+            
+            // Hide home, show chat
+            homeSection.classList.add('hidden');
+            featuresSection.classList.add('hidden');
+            chatSection.classList.remove('hidden');
+            
+            // Show appropriate container
+            if (appState.currentMode === 'video') {
+                videoContainer.classList.remove('hidden');
+                textChatContainer.classList.add('hidden');
+                initializeVideoChat();
+            } else {
+                videoContainer.classList.add('hidden');
+                textChatContainer.classList.remove('hidden');
+                initializeTextChat();
+            }
+            
+            // Start session timer
+            appState.sessionStart = new Date();
+            updateSessionTimer();
+            
+            // Simulate finding a partner
+            setTimeout(() => {
+                connectToPartner();
+            }, 1500);
+        }
+        
+        function initializeVideoChat() {
+            // Request camera and microphone
+            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+                .then(stream => {
+                    localStream = stream;
+                    const localVideo = document.getElementById('local-video');
+                    if (localVideo) localVideo.srcObject = stream;
+                    
+                    // Hide loading
+                    document.getElementById('video-loading').classList.add('hidden');
+                })
+                .catch(error => {
+                    console.error('Error accessing media devices:', error);
+                    alert('Unable to access camera/microphone. Please check permissions.');
+                    // Fall back to text chat
+                    appState.currentMode = 'text';
+                    videoContainer.classList.add('hidden');
+                    textChatContainer.classList.remove('hidden');
+                });
+        }
+        
+        function initializeTextChat() {
+            // Enable input after "connection"
+            setTimeout(() => {
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+                document.getElementById('chat-status').textContent = 'Connected to stranger';
+                appState.isConnected = true;
+                
+                // Add welcome message
+                addMessage('system', "You're now connected with a stranger! Say hello to start the conversation.");
+            }, 2000);
+        }
+        
+        function connectToPartner() {
+            if (appState.currentMode === 'video') {
+                document.getElementById('video-loading').classList.add('hidden');
+                appState.isConnected = true;
+                
+                // Simulate partner video (in real app, this would be remote stream)
+                setTimeout(() => {
+                    // Show mock connection message
+                    addMessage('system', "Video call connected. You can now see and hear each other.");
+                }, 500);
+            }
+            
+            appState.partnerCount++;
+            document.getElementById('partner-count').textContent = appState.partnerCount;
+        }
+        
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text || !appState.isConnected) return;
+            
+            addMessage('user', text);
+            messageInput.value = '';
+            
+            // Simulate response after delay
+            if (appState.isConnected) {
+                setTimeout(() => {
+                    const responses = [
+                        "That's interesting! Tell me more.",
+                        "I've never thought about it that way.",
+                        "What do you think about this topic?",
+                        "I agree with you on that point.",
+                        "That reminds me of something similar..."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage('stranger', randomResponse);
+                }, 1000 + Math.random() * 2000);
+            }
+            
+            appState.messageCount++;
+            document.getElementById('message-count').textContent = appState.messageCount;
+        }
+        
+        function addMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
+            
+            const bubble = document.createElement('div');
+            bubble.className = sender === 'user' ? 'bubble-user' : 'bubble-stranger';
+            bubble.style.maxWidth = '80%';
+            
+            const messageText = document.createElement('p');
+            messageText.className = 'p-4';
+            messageText.textContent = text;
+            
+            bubble.appendChild(messageText);
+            messageDiv.appendChild(bubble);
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.parentElement.scrollTop = messagesContainer.parentElement.scrollHeight;
+        }
+        
+        function requestVideoCall() {
+            if (appState.currentMode === 'text') {
+                if (confirm('Switch to video call mode?')) {
+                    appState.currentMode = 'video';
+                    textChatContainer.classList.add('hidden');
+                    videoContainer.classList.remove('hidden');
+                    initializeVideoChat();
+                    connectToPartner();
+                }
+            }
+        }
+        
+        function toggleMute() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    appState.isMuted = !audioTrack.enabled;
+                    audioTrack.enabled = !appState.isMuted;
+                    
+                    const btn = document.getElementById('mute-btn');
+                    if (appState.isMuted) {
+                        btn.innerHTML = '<i class="fa-solid fa-microphone-slash text-white"></i>';
+                        btn.classList.add('bg-red-500/30');
+                    } else {
+                        btn.innerHTML = '<i class="fa-solid fa-microphone text-white"></i>';
+                        btn.classList.remove('bg-red-500/30');
+                    }
                 }
             }
         }
         
         function toggleVideo() {
-            isVideoOff = !isVideoOff;
             if (localStream) {
-                localStream.getVideoTracks().forEach(track => {
-                    track.enabled = !isVideoOff;
-                });
-            }
-            
-            const btn = document.getElementById('videoToggle');
-            if (btn) {
-                btn.innerHTML = isVideoOff 
-                    ? '<i class="fa-solid fa-video-slash text-vibe-red"></i>'
-                    : '<i class="fa-solid fa-video text-white"></i>';
-                
-                if (isVideoOff) {
-                    btn.classList.add('bg-vibe-red/20', 'border-vibe-red/30');
-                } else {
-                    btn.classList.remove('bg-vibe-red/20', 'border-vibe-red/30');
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    appState.isVideoOff = !videoTrack.enabled;
+                    videoTrack.enabled = !appState.isVideoOff;
+                    
+                    const btn = document.getElementById('video-btn');
+                    if (appState.isVideoOff) {
+                        btn.innerHTML = '<i class="fa-solid fa-video-slash text-white"></i>';
+                        btn.classList.add('bg-red-500/30');
+                    } else {
+                        btn.innerHTML = '<i class="fa-solid fa-video text-white"></i>';
+                        btn.classList.remove('bg-red-500/30');
+                    }
                 }
             }
         }
         
-        function toggleScreenShare() {
-            isScreenSharing = !isScreenSharing;
-            const btn = document.getElementById('screenShare');
-            
-            if (btn) {
-                if (isScreenSharing) {
-                    btn.classList.add('bg-vibe-cyan/20', 'border-vibe-cyan/30');
-                    btn.innerHTML = '<i class="fa-solid fa-display text-vibe-cyan"></i>';
-                    addSystemMessage('Screen sharing started');
-                } else {
-                    btn.classList.remove('bg-vibe-cyan/20', 'border-vibe-cyan/30');
-                    btn.innerHTML = '<i class="fa-solid fa-display text-white"></i>';
-                    addSystemMessage('Screen sharing stopped');
-                }
-            }
-        }
-        
-        function toggleChatPanel() {
-            const panel = document.getElementById('videoChatPanel');
-            const button = panel.querySelector('button');
-            
-            if (panel.classList.contains('max-h-64')) {
-                panel.classList.remove('max-h-64');
-                panel.classList.add('max-h-96');
-                button.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+        function endCall() {
+            if (appState.currentMode === 'video') {
+                document.getElementById('end-title').textContent = 'Video Call Ended';
+                document.getElementById('end-message').textContent = 'Your video connection has been disconnected.';
             } else {
-                panel.classList.remove('max-h-96');
-                panel.classList.add('max-h-64');
-                button.innerHTML = '<i class="fa-solid fa-chevron-up"></i>';
+                document.getElementById('end-title').textContent = 'Chat Ended';
+                document.getElementById('end-message').textContent = 'Your chat session has ended.';
             }
+            
+            endChat();
         }
         
-        // --- CONNECTION MANAGEMENT ---
-        function nextPartner() {
-            if (currentMode === 'chat') {
-                addSystemMessage('Looking for new partner...');
-                setTimeout(() => {
-                    simulateChatConnection();
-                }, 1500);
-            } else if (currentMode === 'video') {
-                document.getElementById('videoStatus').style.display = 'block';
-                document.getElementById('videoStatus').innerHTML = `
-                    <div class="loader mb-4"><span></span><span></span><span></span></div>
-                    <p class="text-vibe-yellow font-bold tracking-widest animate-pulse">FINDING NEW PARTNER...</p>
-                `;
-                setTimeout(() => {
-                    simulateVideoConnection();
-                }, 2000);
-            }
-        }
-        
-        function leaveChat() {
-            if (currentPartner) {
-                addSystemMessage(`Disconnected from ${currentPartner.name}`);
-            }
-            showPage('home');
-            stopConnection();
-        }
-        
-        function leaveVideoCall() {
-            addVideoChatMessage('Call ended', false);
-            showPage('home');
-            stopConnection();
-        }
-        
-        function leaveGroup() {
-            addSystemMessage('Left the group session');
-            showPage('home');
-            stopConnection();
-        }
-        
-        function stopConnection() {
-            isConnected = false;
-            currentPartner = null;
-            currentRoom = null;
+        function endChat() {
+            appState.isConnected = false;
             
             if (localStream) {
                 localStream.getTracks().forEach(track => track.stop());
                 localStream = null;
             }
             
-            if (peerConnection) {
-                peerConnection.close();
-                peerConnection = null;
-            }
-            
-            // Clear chat
-            if (document.getElementById('chatMessages')) {
-                document.getElementById('chatMessages').innerHTML = `
-                    <div class="text-center text-vibe-cyan/60 py-8">
-                        <i class="fa-solid fa-comment-dots text-4xl mb-3"></i>
-                        <p class="text-sm">Disconnected. Return home to start a new connection.</p>
-                    </div>
-                `;
-            }
+            endModal.classList.remove('hidden');
         }
         
-        function cancelConnection() {
-            const overlay = document.getElementById('connectingOverlay');
-            overlay.classList.add('opacity-0', 'pointer-events-none');
-            showPage('home');
-        }
-        
-        // --- SOCKET.IO HANDLERS ---
-        socket.on('connect', () => {
-            currentUser.id = socket.id;
-            console.log('Connected to server:', socket.id);
-        });
-        
-        socket.on('disconnect', () => {
-            addSystemMessage('Disconnected from server. Reconnecting...');
-            isConnected = false;
-        });
-        
-        socket.on('matched', (data) => {
-            console.log('Matched with:', data);
-            currentPartner = data.partner;
-            currentRoom = data.room;
-            isConnected = true;
+        function nextPartner() {
+            endModal.classList.add('hidden');
+            appState.messageCount = 0;
+            document.getElementById('message-count').textContent = '0';
             
-            // Update UI based on mode
-            if (currentMode === 'chat') {
-                document.getElementById('partnerName').textContent = currentPartner.name;
-                updateInterestTags(currentPartner.interests, 'commonInterests');
-                addSystemMessage(`Connected to ${currentPartner.name}`);
-            } else if (currentMode === 'video') {
-                document.getElementById('videoPartnerName').textContent = currentPartner.name;
-                updateInterestTags(currentPartner.interests, 'videoCommonInterests');
-                document.getElementById('videoStatus').style.display = 'none';
+            messagesContainer.innerHTML = '';
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            
+            document.getElementById('chat-status').textContent = 'Connecting...';
+            
+            if (appState.currentMode === 'video') {
+                document.getElementById('video-loading').classList.remove('hidden');
             }
             
-            // Initialize WebRTC
-            initializeWebRTC(data.initiator);
-        });
-        
-        socket.on('message', (data) => {
-            if (data.room === currentRoom && data.sender !== currentUser.id) {
-                if (data.type === 'text') {
-                    addMessage(data.content, false);
-                } else if (data.type === 'file') {
-                    // Handle file transfer
-                } else if (data.type === 'typing') {
-                    // Show typing indicator
+            setTimeout(() => {
+                connectToPartner();
+                
+                if (appState.currentMode === 'text') {
+                    messageInput.disabled = false;
+                    sendBtn.disabled = false;
+                    messageInput.focus();
+                    document.getElementById('chat-status').textContent = 'Connected to stranger';
+                    appState.isConnected = true;
+                    
+                    addMessage('system', "Connected to a new stranger. Start chatting!");
                 }
-            }
-        });
+            }, 2000);
+        }
         
-        socket.on('partner_left', () => {
-            addSystemMessage('Partner disconnected');
-            stopConnection();
-        });
-        
-        // --- WEBRTC INITIALIZATION ---
-        function initializeWebRTC(isInitiator) {
-            const config = {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
-            };
+        function goHome() {
+            endModal.classList.add('hidden');
+            chatSection.classList.add('hidden');
+            homeSection.classList.remove('hidden');
             
-            peerConnection = new RTCPeerConnection(config);
+            // Reset state
+            appState.isConnected = false;
+            appState.messageCount = 0;
+            appState.partnerCount = 0;
             
-            // Add local stream
             if (localStream) {
-                localStream.getTracks().forEach(track => {
-                    peerConnection.addTrack(track, localStream);
-                });
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
             }
-            
-            // Handle incoming streams
-            peerConnection.ontrack = (event) => {
-                if (event.streams && event.streams[0]) {
-                    if (currentMode === 'video' && document.getElementById('remoteVideo')) {
-                        document.getElementById('remoteVideo').srcObject = event.streams[0];
-                    }
-                }
-            };
-            
-            // ICE candidate handling
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit('ice_candidate', {
-                        room: currentRoom,
-                        candidate: event.candidate
-                    });
-                }
-            };
-            
-            // Create data channel for chat
-            if (isInitiator) {
-                dataChannel = peerConnection.createDataChannel('chat');
-                setupDataChannel();
+        }
+        
+        function showFeatures() {
+            featuresSection.classList.remove('hidden');
+            featuresSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function toggleTheme() {
+            const body = document.body;
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                body.style.backgroundColor = '#0A0A0F';
             } else {
-                peerConnection.ondatachannel = (event) => {
-                    dataChannel = event.channel;
-                    setupDataChannel();
-                };
-            }
-            
-            // Create offer/answer
-            if (isInitiator) {
-                peerConnection.createOffer()
-                    .then(offer => peerConnection.setLocalDescription(offer))
-                    .then(() => {
-                        socket.emit('offer', {
-                            room: currentRoom,
-                            offer: peerConnection.localDescription
-                        });
-                    });
+                body.classList.add('dark');
+                body.style.backgroundColor = '#1A1A2E';
             }
         }
         
-        function setupDataChannel() {
-            dataChannel.onopen = () => {
-                console.log('Data channel opened');
-            };
+        function updateInterestsTags() {
+            const container = document.getElementById('interests-tags');
+            container.innerHTML = '';
             
-            dataChannel.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'message') {
-                        addMessage(data.content, false);
-                    } else if (data.type === 'file') {
-                        // Handle file
-                    }
-                } catch (e) {
-                    addMessage(event.data, false);
+            appState.userInterests.forEach(interest => {
+                if (interest.trim()) {
+                    const tag = document.createElement('span');
+                    tag.className = 'px-3 py-1 bg-white/5 rounded-full text-xs';
+                    tag.textContent = `#${interest.trim()}`;
+                    container.appendChild(tag);
                 }
-            };
+            });
         }
         
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initialize socket
-            socket.connect();
-            
-            // Set up event listeners
-            document.getElementById('messageInput')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-            
-            document.getElementById('videoChatInput')?.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendVideoChat();
-                }
-            });
-            
-            // Handle back button
-            window.addEventListener('popstate', () => {
-                showPage('home');
-            });
-            
-            // Initialize scroll button
-            window.addEventListener('scroll', () => {
-                const scrollBtn = document.getElementById('scrollTopBtn');
-                const header = document.getElementById('mainHeader');
+        function updateSessionTimer() {
+            if (appState.sessionStart && appState.isConnected) {
+                const now = new Date();
+                const diff = Math.floor((now - appState.sessionStart) / 1000);
+                const minutes = Math.floor(diff / 60);
+                const seconds = diff % 60;
+                document.getElementById('session-time').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                 
-                if (window.scrollY > 400) {
-                    scrollBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-10');
-                } else {
-                    scrollBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-10');
-                }
+                setTimeout(updateSessionTimer, 1000);
+            }
+        }
+        
+        function updateOnlineCount() {
+            // Simulate online count updates
+            setInterval(() => {
+                const count = document.getElementById('online-count');
+                const mobileCount = document.getElementById('mobile-online-count');
+                let current = parseInt(count.textContent.replace(/,/g, '')) || 12845;
+                current += Math.floor(Math.random() * 100) - 50;
+                if (current < 10000) current = 10000 + Math.floor(Math.random() * 5000);
                 
-                if (window.scrollY > 50) {
-                    header.classList.add('opacity-0', 'pointer-events-none');
-                } else {
-                    header.classList.remove('opacity-0', 'pointer-events-none');
-                }
-            });
+                const formatted = current.toLocaleString();
+                count.textContent = formatted;
+                if (mobileCount) mobileCount.textContent = formatted;
+            }, 5000);
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Send message on Enter (but not Shift+Enter)
+            if (e.key === 'Enter' && !e.shiftKey && document.activeElement === messageInput) {
+                e.preventDefault();
+                sendMessage();
+            }
             
-            // Close modal on escape
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeModal();
-                }
-            });
-            
-            console.log('Vibe Konek initialized');
+            // Escape to end chat
+            if (e.key === 'Escape' && appState.isConnected) {
+                endChat();
+            }
         });
         
-        // --- UTILITY FUNCTIONS ---
-        function generateRoomId() {
-            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        }
-        
-        function simulateAudioConnection() {
-            // Audio connection would be similar to video but without video tracks
-            showPage('video'); // Using same screen but without video
-            document.getElementById('videoScreen').querySelector('video').style.display = 'none';
-            addSystemMessage('Audio connection established');
-        }
-        
-        function toggleGroupVideo() {
-            // Toggle group video
-        }
-        
-        function toggleGroupAudio() {
-            // Toggle group audio
-        }
-        
-        function toggleGroupScreenShare() {
-            // Toggle group screen share
-        }
-        
-        function toggleGroupChat() {
-            // Toggle group chat panel
-        }
-        
-        function inviteToGroup() {
-            const inviteCode = generateRoomId().substring(0, 8).toUpperCase();
-            addSystemMessage(`Invite code: ${inviteCode}. Share this with friends to join!`);
-        }
+        // Initialize
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check Firebase config
+            initFirebase();
+            
+            // Default to text mode
+            selectMode('text');
+            
+            // Update online count
+            updateOnlineCount();
+            
+            // Auto-resize textarea
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        });
     </script>
 </body>
 </html>
