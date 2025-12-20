@@ -1,153 +1,153 @@
-// Complete server.js for Render
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 
 const app = express();
-const server = http.createServer(app);
+app.use(cors());
+app.use(express.json());
 
+const server = http.createServer(app);
 const io = socketIo(server, {
-  cors: {
-    origin: [
-      'https://vibekonek.netlify.app',
-      'https://vibekonek.blogspot.com',
-      'http://localhost:3000'
-    ],
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
 });
 
-// Store users and rooms
-const users = new Map();
-const waitingRooms = { chat: [], audio: [], video: [] };
+let users = new Map();
+let waitingQueue = [];
 
 io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-  
-  users.set(socket.id, {
-    id: socket.id,
-    name: 'Anonymous',
-    interests: [],
-    room: null
-  });
-  
-  // Find partner
-  socket.on('find_partner', (data) => {
-    const queue = waitingRooms[data.mode];
-    const user = users.get(socket.id);
-    user.mode = data.mode;
-    user.interests = data.interests || [];
+    console.log('New connection:', socket.id);
     
-    // Find match
-    let partnerFound = null;
-    for (let i = 0; i < queue.length; i++) {
-      if (queue[i] !== socket.id) {
-        partnerFound = queue[i];
-        queue.splice(i, 1);
-        break;
-      }
-    }
+    socket.on('register', (userData) => {
+        users.set(socket.id, {
+            ...userData,
+            socketId: socket.id,
+            connectedAt: Date.now(),
+            status: 'online'
+        });
+        
+        io.emit('onlineCount', users.size);
+    });
     
-    if (partnerFound) {
-      const roomId = `room_${socket.id}_${partnerFound}`;
-      const partner = users.get(partnerFound);
-      
-      // Set rooms
-      user.room = roomId;
-      partner.room = roomId;
-      
-      // Join socket room
-      socket.join(roomId);
-      io.to(partnerFound).join(roomId);
-      
-      // Notify both
-      io.to(socket.id).emit('matched', {
-        partner: {
-          id: partner.id,
-          name: partner.name || 'Stranger'
-        },
-        roomId,
-        initiator: true
-      });
-      
-      io.to(partnerFound).emit('matched', {
-        partner: {
-          id: user.id,
-          name: user.name || 'Stranger'
-        },
-        roomId,
-        initiator: false
-      });
-    } else {
-      queue.push(socket.id);
-      socket.emit('searching');
-    }
-  });
-  
-  // WebRTC signaling
-  socket.on('webrtc_offer', (data) => {
-    socket.to(data.roomId).emit('webrtc_offer', {
-      from: socket.id,
-      offer: data.offer
+    socket.on('findMatch', (userData) => {
+        const user = { ...userData, socketId: socket.id };
+        waitingQueue.push(user);
+        
+        // Try to match
+        matchUsers();
+        
+        socket.emit('queueUpdate', waitingQueue.length);
     });
-  });
-  
-  socket.on('webrtc_answer', (data) => {
-    socket.to(data.roomId).emit('webrtc_answer', {
-      from: socket.id,
-      answer: data.answer
+    
+    socket.on('message', (data) => {
+        const sender = users.get(socket.id);
+        const partner = Array.from(users.values()).find(u => u.userId === data.to);
+        
+        if (partner && partner.socketId) {
+            io.to(partner.socketId).emit('message', {
+                ...data,
+                timestamp: Date.now()
+            });
+        }
     });
-  });
-  
-  socket.on('webrtc_ice_candidate', (data) => {
-    socket.to(data.roomId).emit('webrtc_ice_candidate', {
-      from: socket.id,
-      candidate: data.candidate
+    
+    socket.on('file', (data) => {
+        const sender = users.get(socket.id);
+        const partner = Array.from(users.values()).find(u => u.userId === data.to);
+        
+        if (partner && partner.socketId) {
+            io.to(partner.socketId).emit('file', {
+                ...data,
+                timestamp: Date.now()
+            });
+        }
     });
-  });
-  
-  // Chat messages
-  socket.on('chat_message', (data) => {
-    const user = users.get(socket.id);
-    if (user && user.room) {
-      socket.to(user.room).emit('new_message', {
-        from: socket.id,
-        fromName: user.name,
-        content: data.content,
-        timestamp: Date.now()
-      });
-    }
-  });
-  
-  socket.on('disconnect', () => {
-    const user = users.get(socket.id);
-    if (user && user.room) {
-      socket.to(user.room).emit('partner_disconnected');
-    }
-    users.delete(socket.id);
-    // Remove from waiting queues
-    Object.keys(waitingRooms).forEach(mode => {
-      const index = waitingRooms[mode].indexOf(socket.id);
-      if (index > -1) waitingRooms[mode].splice(index, 1);
+    
+    socket.on('skipPartner', (data) => {
+        const user = users.get(socket.id);
+        if (user && user.partnerId) {
+            const partner = users.get(user.partnerId);
+            if (partner) {
+                io.to(partner.socketId).emit('partnerDisconnected');
+                delete partner.partnerId;
+                delete user.partnerId;
+            }
+        }
     });
-  });
+    
+    socket.on('ping', () => {
+        socket.emit('pong');
+    });
+    
+    socket.on('disconnect', () => {
+        const user = users.get(socket.id);
+        if (user) {
+            if (user.partnerId) {
+                const partner = users.get(user.partnerId);
+                if (partner) {
+                    io.to(partner.socketId).emit('partnerDisconnected');
+                    delete partner.partnerId;
+                }
+            }
+            users.delete(socket.id);
+        }
+        
+        waitingQueue = waitingQueue.filter(u => u.socketId !== socket.id);
+        io.emit('onlineCount', users.size);
+    });
 });
 
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    users: users.size,
-    waiting: {
-      chat: waitingRooms.chat.length,
-      audio: waitingRooms.audio.length,
-      video: waitingRooms.video.length
+function matchUsers() {
+    while (waitingQueue.length >= 2) {
+        const user1 = waitingQueue.shift();
+        const user2 = waitingQueue.shift();
+        
+        const socket1 = io.sockets.sockets.get(user1.socketId);
+        const socket2 = io.sockets.sockets.get(user2.socketId);
+        
+        if (socket1 && socket2) {
+            // Set partners
+            users.get(user1.socketId).partnerId = user2.socketId;
+            users.get(user2.socketId).partnerId = user1.socketId;
+            
+            // Emit match found
+            socket1.emit('matchFound', {
+                userId: user2.userId,
+                name: user2.name,
+                gender: user2.gender,
+                interests: user2.interests
+            });
+            
+            socket2.emit('matchFound', {
+                userId: user1.userId,
+                name: user1.name,
+                gender: user1.gender,
+                interests: user1.interests
+            });
+        }
     }
-  });
+    
+    // Update remaining queue
+    waitingQueue.forEach((user, index) => {
+        const socket = io.sockets.sockets.get(user.socketId);
+        if (socket) {
+            socket.emit('queueUpdate', index + 1);
+        }
+    });
+}
+
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        users: users.size,
+        queue: waitingQueue.length 
+    });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
