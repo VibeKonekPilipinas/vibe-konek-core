@@ -1,3 +1,4 @@
+// Complete server.js for Render
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -5,123 +6,148 @@ const cors = require('cors');
 
 const app = express();
 const server = http.createServer(app);
+
 const io = socketIo(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+  cors: {
+    origin: [
+      'https://vibekonek.netlify.app',
+      'https://vibekonek.blogspot.com',
+      'http://localhost:3000'
+    ],
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
 });
 
-// Store active rooms and users
-const rooms = new Map();
+// Store users and rooms
 const users = new Map();
+const waitingRooms = { chat: [], audio: [], video: [] };
 
 io.on('connection', (socket) => {
-    console.log('New connection:', socket.id);
+  console.log('User connected:', socket.id);
+  
+  users.set(socket.id, {
+    id: socket.id,
+    name: 'Anonymous',
+    interests: [],
+    room: null
+  });
+  
+  // Find partner
+  socket.on('find_partner', (data) => {
+    const queue = waitingRooms[data.mode];
+    const user = users.get(socket.id);
+    user.mode = data.mode;
+    user.interests = data.interests || [];
     
-    socket.on('join', (data) => {
-        const { mode, interests, name, gender } = data;
-        users.set(socket.id, { ...data, socketId: socket.id });
-        
-        // Find or create room
-        let room = findMatchingRoom(mode, interests);
-        if (!room) {
-            room = createRoom(mode, interests);
-        }
-        
-        socket.join(room.id);
-        room.participants.push(socket.id);
-        
-        // Notify others in room
-        socket.to(room.id).emit('user_joined', {
-            user: { id: socket.id, name, interests, gender }
-        });
-        
-        // Send room info to joining user
-        const otherParticipants = room.participants.filter(id => id !== socket.id);
-        socket.emit('room_info', {
-            roomId: room.id,
-            participants: otherParticipants.map(id => users.get(id)),
-            initiator: otherParticipants.length > 0
-        });
-    });
+    // Find match
+    let partnerFound = null;
+    for (let i = 0; i < queue.length; i++) {
+      if (queue[i] !== socket.id) {
+        partnerFound = queue[i];
+        queue.splice(i, 1);
+        break;
+      }
+    }
     
-    socket.on('offer', (data) => {
-        socket.to(data.room).emit('offer', data);
+    if (partnerFound) {
+      const roomId = `room_${socket.id}_${partnerFound}`;
+      const partner = users.get(partnerFound);
+      
+      // Set rooms
+      user.room = roomId;
+      partner.room = roomId;
+      
+      // Join socket room
+      socket.join(roomId);
+      io.to(partnerFound).join(roomId);
+      
+      // Notify both
+      io.to(socket.id).emit('matched', {
+        partner: {
+          id: partner.id,
+          name: partner.name || 'Stranger'
+        },
+        roomId,
+        initiator: true
+      });
+      
+      io.to(partnerFound).emit('matched', {
+        partner: {
+          id: user.id,
+          name: user.name || 'Stranger'
+        },
+        roomId,
+        initiator: false
+      });
+    } else {
+      queue.push(socket.id);
+      socket.emit('searching');
+    }
+  });
+  
+  // WebRTC signaling
+  socket.on('webrtc_offer', (data) => {
+    socket.to(data.roomId).emit('webrtc_offer', {
+      from: socket.id,
+      offer: data.offer
     });
-    
-    socket.on('answer', (data) => {
-        socket.to(data.room).emit('answer', data);
+  });
+  
+  socket.on('webrtc_answer', (data) => {
+    socket.to(data.roomId).emit('webrtc_answer', {
+      from: socket.id,
+      answer: data.answer
     });
-    
-    socket.on('ice_candidate', (data) => {
-        socket.to(data.room).emit('ice_candidate', data);
+  });
+  
+  socket.on('webrtc_ice_candidate', (data) => {
+    socket.to(data.roomId).emit('webrtc_ice_candidate', {
+      from: socket.id,
+      candidate: data.candidate
     });
-    
-    socket.on('message', (data) => {
-        socket.to(data.room).emit('message', {
-            ...data,
-            sender: socket.id
-        });
+  });
+  
+  // Chat messages
+  socket.on('chat_message', (data) => {
+    const user = users.get(socket.id);
+    if (user && user.room) {
+      socket.to(user.room).emit('new_message', {
+        from: socket.id,
+        fromName: user.name,
+        content: data.content,
+        timestamp: Date.now()
+      });
+    }
+  });
+  
+  socket.on('disconnect', () => {
+    const user = users.get(socket.id);
+    if (user && user.room) {
+      socket.to(user.room).emit('partner_disconnected');
+    }
+    users.delete(socket.id);
+    // Remove from waiting queues
+    Object.keys(waitingRooms).forEach(mode => {
+      const index = waitingRooms[mode].indexOf(socket.id);
+      if (index > -1) waitingRooms[mode].splice(index, 1);
     });
-    
-    socket.on('disconnect', () => {
-        const user = users.get(socket.id);
-        if (user) {
-            // Remove from rooms
-            rooms.forEach((room, roomId) => {
-                if (room.participants.includes(socket.id)) {
-                    room.participants = room.participants.filter(id => id !== socket.id);
-                    socket.to(roomId).emit('user_left', { userId: socket.id });
-                    
-                    if (room.participants.length === 0) {
-                        rooms.delete(roomId);
-                    }
-                }
-            });
-            users.delete(socket.id);
-        }
-        console.log('User disconnected:', socket.id);
-    });
+  });
 });
 
-function findMatchingRoom(mode, interests) {
-    for (const [id, room] of rooms) {
-        if (room.mode === mode && room.participants.length < (mode === 'group' ? 8 : 2)) {
-            // Simple interest matching
-            const hasCommonInterests = interests.some(interest => 
-                room.interests.some(roomInterest => 
-                    roomInterest.toLowerCase().includes(interest.toLowerCase()) ||
-                    interest.toLowerCase().includes(roomInterest.toLowerCase())
-                )
-            );
-            
-            if (hasCommonInterests || room.interests.length === 0) {
-                return room;
-            }
-        }
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    users: users.size,
+    waiting: {
+      chat: waitingRooms.chat.length,
+      audio: waitingRooms.audio.length,
+      video: waitingRooms.video.length
     }
-    return null;
-}
-
-function createRoom(mode, interests) {
-    const roomId = generateRoomId();
-    const room = {
-        id: roomId,
-        mode,
-        interests: interests || [],
-        participants: [],
-        createdAt: Date.now()
-    };
-    rooms.set(roomId, room);
-    return room;
-}
-
-function generateRoomId() {
-    return Math.random().toString(36).substring(2, 15);
-}
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
