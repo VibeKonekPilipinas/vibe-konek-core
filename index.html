@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Vibe Konek | Anonymous P2P Connections</title>
+  
+  	 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,600;12..96,800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -728,8 +730,9 @@
 
     <!-- ==================== JAVASCRIPT ==================== -->
     <script>
+
         // --- GLOBAL STATE ---
-        const socket = io("https://vibewire-server.onrender.com");
+        const socket = io("https://vibe-konek-core.onrender.com");
         
         let currentMode = null; // 'chat', 'audio', 'video', 'group'
         let currentRoom = null;
