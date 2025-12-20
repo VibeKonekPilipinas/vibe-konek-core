@@ -1,5 +1,5 @@
 {
-  "name": "vibe-konek-server",
+  "name": "vibekonek-server",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
