@@ -1,6 +1,7 @@
 {
   "name": "vibekonek-server",
   "version": "1.0.0",
+  "description": "Vibe Konek Anonymous Chat Server",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
