@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Vibe Konek 2.0 | Next-Gen Anonymous Connection</title>
+    <title>Vibe Konek | Smart Anonymous Connection</title>
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -12,83 +12,17 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <!-- Tailwind Config -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'vibe-primary': '#00D4FF',
-                        'vibe-secondary': '#FF2E63',
-                        'vibe-accent': '#9D4EDD',
-                        'vibe-dark': '#0A0A0F',
-                        'vibe-card': 'rgba(255, 255, 255, 0.05)',
-                        'vibe-glass': 'rgba(255, 255, 255, 0.08)',
-                        'vibe-border': 'rgba(255, 255, 255, 0.12)',
-                    },
-                    fontFamily: {
-                        'display': ['Outfit', 'sans-serif'],
-                        'body': ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'liquid-flow': 'liquidFlow 20s ease-in-out infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
-                        'shimmer': 'shimmer 3s infinite',
-                        'slide-up': 'slideUp 0.4s ease-out forwards',
-                        'slide-down': 'slideDown 0.4s ease-out forwards',
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'gradient-xy': 'gradientXY 8s ease infinite',
-                    },
-                    keyframes: {
-                        liquidFlow: {
-                            '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        },
-                        pulseGlow: {
-                            '0%, 100%': { opacity: 0.5 },
-                            '50%': { opacity: 1 },
-                        },
-                        shimmer: {
-                            '0%': { backgroundPosition: '-200% center' },
-                            '100%': { backgroundPosition: '200% center' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(100%)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideDown: {
-                            '0%': { transform: 'translateY(-100%)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        gradientXY: {
-                            '0%, 100%': { backgroundPosition: '0% 50%' },
-                            '50%': { backgroundPosition: '100% 50%' },
-                        },
-                    },
-                    backdropBlur: {
-                        'xs': '2px',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- SOCKET.IO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     
     <style>
+        :root {
+            --vibe-primary: #00D4FF;
+            --vibe-secondary: #FF2E63;
+            --vibe-accent: #9D4EDD;
+            --vibe-dark: #0A0A0F;
+        }
+        
         /* Custom Styles */
         body {
             background-color: #0A0A0F;
@@ -122,7 +56,6 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             background-size: 200% auto;
-            animation: gradientXY 4s ease infinite;
         }
         
         /* Custom Scrollbar */
@@ -153,23 +86,6 @@
             border-radius: 20px 20px 20px 4px;
             max-width: 80%;
             border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Video Container */
-        .video-container {
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
-            background: #000;
-        }
-        
-        .video-container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-            z-index: 1;
-            pointer-events: none;
         }
         
         /* Loading Animation */
@@ -210,6 +126,12 @@
             animation: liquidFlow 20s ease-in-out infinite;
         }
         
+        @keyframes liquidFlow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        
         /* Button Effects */
         .btn-primary {
             background: linear-gradient(135deg, #00D4FF, #0099FF);
@@ -235,18 +157,145 @@
             transform: translateY(-2px);
         }
         
+        /* Gender Colors */
+        .gender-male { color: #00D4FF; }
+        .gender-female { color: #FF2E63; }
+        .gender-other { color: #9D4EDD; }
+        
+        /* File Upload */
+        .file-preview {
+            max-width: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .file-preview img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             .glass-card {
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                border-radius: 20px;
+            }
+            
+            .mobile-hidden {
+                display: none !important;
             }
             
             .mobile-full {
                 width: 100vw;
-                margin-left: -1rem;
-                margin-right: -1rem;
+                position: relative;
+                left: 50%;
+                right: 50%;
+                margin-left: -50vw;
+                margin-right: -50vw;
             }
+            
+            /* Mobile chat layout */
+            .mobile-chat-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 100;
+                background: #0A0A0F;
+            }
+            
+            .mobile-chat-header {
+                background: rgba(10, 10, 15, 0.95);
+                backdrop-filter: blur(20px);
+                padding: 1rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .mobile-chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: 1rem;
+                padding-bottom: 120px; /* Space for input */
+            }
+            
+            .mobile-chat-input {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(10, 10, 15, 0.95);
+                backdrop-filter: blur(20px);
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 1rem;
+            }
+        }
+        
+        /* Desktop Optimizations */
+        @media (min-width: 769px) {
+            .desktop-hidden {
+                display: none !important;
+            }
+        }
+        
+        /* Animation Classes */
+        .animate-slide-up {
+            animation: slideUp 0.4s ease-out forwards;
+        }
+        
+        .animate-slide-down {
+            animation: slideDown 0.4s ease-out forwards;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes slideUp {
+            0% { transform: translateY(100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes slideDown {
+            0% { transform: translateY(-100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* File Sharing Modal */
+        .file-dropzone {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-dropzone:hover {
+            border-color: #00D4FF;
+            background: rgba(0, 212, 255, 0.05);
+        }
+        
+        .file-dropzone.drag-over {
+            border-color: #9D4EDD;
+            background: rgba(157, 78, 221, 0.1);
         }
     </style>
 </head>
@@ -254,106 +303,90 @@
 <body class="antialiased">
     <!-- Liquid Background -->
     <div class="liquid-bg">
-        <div class="liquid-blob w-[500px] h-[500px] bg-vibe-primary top-[-100px] left-[-100px] opacity-30"></div>
-        <div class="liquid-blob w-[400px] h-[400px] bg-vibe-secondary top-[40%] right-[-50px] opacity-25" style="animation-delay: -5s;"></div>
-        <div class="liquid-blob w-[600px] h-[600px] bg-vibe-accent bottom-[-150px] left-[30%] opacity-20" style="animation-delay: -10s;"></div>
+        <div class="liquid-blob w-[500px] h-[500px] bg-[#00D4FF] top-[-100px] left-[-100px] opacity-30"></div>
+        <div class="liquid-blob w-[400px] h-[400px] bg-[#FF2E63] top-[40%] right-[-50px] opacity-25" style="animation-delay: -5s;"></div>
+        <div class="liquid-blob w-[600px] h-[600px] bg-[#9D4EDD] bottom-[-150px] left-[30%] opacity-20" style="animation-delay: -10s;"></div>
     </div>
     
-    <!-- Firebase Setup Modal -->
-    <div id="setup-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 hidden">
-        <div class="glass-card max-w-md w-full p-8 animate-slide-up">
+    <!-- Server Connection Modal -->
+    <div id="server-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 animate-fade-in">
+        <div class="glass-card max-w-md w-full p-8">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center">
-                    <i class="fa-solid fa-bolt text-white text-xl"></i>
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00D4FF] to-[#9D4EDD] flex items-center justify-center">
+                    <i class="fa-solid fa-plug text-white text-xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-2xl font-display font-bold text-white">Setup Vibe Konek</h2>
-                    <p class="text-sm text-gray-400">Connect to Firebase for real-time chat</p>
+                    <h2 class="text-2xl font-bold text-white">Welcome to Vibe Konek</h2>
+                    <p class="text-sm text-gray-400">Connecting to chat server...</p>
                 </div>
             </div>
             
-            <form id="config-form" class="space-y-4">
-                <div>
-                    <label class="text-xs font-bold text-gray-400 uppercase block mb-2">Firebase Config</label>
-                    <div class="space-y-3">
-                        <input type="text" id="fb-apiKey" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="API Key (AIzaSy...)" />
-                        <input type="text" id="fb-authDomain" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Auth Domain (project.firebaseapp.com)" />
-                        <input type="text" id="fb-projectId" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Project ID" />
-                        <input type="text" id="fb-storageBucket" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Storage Bucket (optional)" />
-                        <input type="text" id="fb-messagingSenderId" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="Messaging Sender ID (optional)" />
-                        <input type="text" id="fb-appId" required class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 text-sm focus:border-vibe-primary focus:outline-none transition-colors" placeholder="App ID" />
-                    </div>
+            <div class="text-center space-y-4">
+                <div class="loading-dots mb-4">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-                
+                <p class="text-gray-300" id="server-status">Initializing connection...</p>
                 <div class="pt-4">
-                    <button type="submit" class="w-full btn-primary py-3 rounded-xl font-bold flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-link"></i> Connect to Firebase
+                    <button onclick="retryConnection()" class="text-sm text-gray-400 hover:text-white">
+                        Retry connection
                     </button>
-                    <p class="text-xs text-gray-500 text-center mt-3">
-                        Don't have Firebase? 
-                        <a href="https://firebase.google.com" target="_blank" class="text-vibe-primary hover:underline">Create a free project</a>
-                    </p>
                 </div>
-            </form>
-            
-            <div class="mt-6 pt-6 border-t border-vibe-border">
-                <button onclick="skipFirebase()" class="text-sm text-gray-400 hover:text-white w-full text-center">
-                    Skip for now (demo mode)
-                </button>
             </div>
         </div>
     </div>
     
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-40 p-6">
+    <nav class="fixed top-0 left-0 right-0 z-40 p-4 bg-black/50 backdrop-blur-lg">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="glass-card w-12 h-12 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-bolt text-vibe-primary text-xl"></i>
+                <div class="glass-card w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center">
+                    <i class="fa-solid fa-bolt text-[#00D4FF] text-lg md:text-xl"></i>
                 </div>
-                <h1 class="text-2xl font-display font-bold">
+                <h1 class="text-xl md:text-2xl font-bold">
                     Vibe<span class="gradient-text">Konek</span>
                 </h1>
             </div>
             
-            <div class="hidden md:flex items-center gap-6">
-                <div class="flex items-center gap-2 px-4 py-2 glass-card rounded-full">
+            <div class="hidden md:flex items-center gap-4">
+                <div class="flex items-center gap-2 px-3 py-2 glass-card rounded-full">
                     <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span class="text-sm font-medium" id="online-count">12,845</span>
+                    <span class="text-sm font-medium" id="online-count">0</span>
                     <span class="text-xs text-gray-400">online</span>
                 </div>
                 
-                <button onclick="openSettings()" class="glass-card w-12 h-12 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-gear"></i>
+                <button onclick="openSettings()" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-sliders-h"></i>
                 </button>
             </div>
             
-            <button class="md:hidden glass-card w-12 h-12 rounded-xl flex items-center justify-center" onclick="toggleMobileMenu()">
+            <button class="md:hidden glass-card w-10 h-10 rounded-xl flex items-center justify-center" onclick="toggleMobileMenu()">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
         
         <!-- Mobile Menu -->
-        <div id="mobile-menu" class="md:hidden glass-card mt-4 p-4 rounded-2xl hidden animate-slide-down">
+        <div id="mobile-menu" class="md:hidden glass-card mt-3 p-4 rounded-2xl hidden animate-slide-down">
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span class="text-sm font-medium" id="mobile-online-count">12,845</span>
+                        <span class="text-sm font-medium" id="mobile-online-count">0</span>
                         <span class="text-xs text-gray-400">online</span>
                     </div>
                     
-                    <button onclick="openSettings()" class="glass-card w-10 h-10 rounded-xl flex items-center justify-center">
-                        <i class="fa-solid fa-gear"></i>
+                    <button onclick="openSettings()" class="glass-card w-8 h-8 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-sliders-h text-sm"></i>
                     </button>
                 </div>
                 
                 <div class="flex gap-2">
-                    <button onclick="startChat('text')" class="flex-1 btn-primary py-3 rounded-xl text-sm font-bold">
-                        <i class="fa-solid fa-comment mr-2"></i> Text
+                    <button onclick="startChat('text')" class="flex-1 btn-primary py-2.5 rounded-xl text-sm font-bold">
+                        <i class="fa-solid fa-comment mr-1"></i> Text Chat
                     </button>
-                    <button onclick="startChat('video')" class="flex-1 btn-secondary py-3 rounded-xl text-sm font-bold">
-                        <i class="fa-solid fa-video mr-2"></i> Video
+                    <button onclick="startChat('video')" class="flex-1 btn-secondary py-2.5 rounded-xl text-sm font-bold">
+                        <i class="fa-solid fa-video mr-1"></i> Video
                     </button>
                 </div>
             </div>
@@ -361,167 +394,101 @@
     </nav>
     
     <!-- Main Content -->
-    <main class="pt-32 pb-20 px-4 max-w-7xl mx-auto">
+    <main class="pt-24 pb-20 px-4 max-w-7xl mx-auto">
         <!-- Hero Section -->
-        <section id="home-section" class="text-center mb-20">
+        <section id="home-section" class="text-center mb-16 md:mb-20">
             <div class="inline-flex items-center gap-2 px-4 py-2 glass-card rounded-full mb-6 animate-float">
-                <i class="fa-solid fa-bolt text-vibe-primary"></i>
-                <span class="text-sm font-bold">ANONYMOUS • ENCRYPTED • REAL-TIME</span>
+                <i class="fa-solid fa-bolt text-[#00D4FF]"></i>
+                <span class="text-xs md:text-sm font-bold">ANONYMOUS • SMART MATCHING • FILE SHARE</span>
             </div>
             
-            <h1 class="text-5xl md:text-7xl font-display font-bold mb-6">
-                Connect <span class="gradient-text">Instantly</span><br/>
-                With <span class="gradient-text">Strangers</span>
+            <h1 class="text-4xl md:text-7xl font-bold mb-6">
+                Connect <span class="gradient-text">Instantly</span><br class="hidden md:block"/>
+                <span class="text-3xl md:text-7xl">With <span class="gradient-text">Strangers</span></span>
             </h1>
             
-            <p class="text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                Experience next-generation anonymous chat with liquid glass design. 
-                No accounts, no tracking, just pure connection.
+            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10">
+                Smart anonymous chat with gender-aware matching, file sharing, and real-time connections.
             </p>
             
-            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-                <button onclick="openSettings()" class="btn-primary px-8 py-4 rounded-2xl text-lg font-bold flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-play"></i> Start Chatting Now
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12 md:mb-16">
+                <button onclick="openSettings()" class="btn-primary px-6 md:px-8 py-3 md:py-4 rounded-2xl text-base md:text-lg font-bold flex items-center justify-center gap-2 md:gap-3">
+                    <i class="fa-solid fa-play"></i> Start Smart Chat
                 </button>
-                <button onclick="showFeatures()" class="btn-secondary px-8 py-4 rounded-2xl text-lg font-bold">
-                    <i class="fa-solid fa-sparkles mr-2"></i> See Features
+                <button onclick="openServerInfo()" class="btn-secondary px-6 md:px-8 py-3 md:py-4 rounded-2xl text-base md:text-lg font-bold">
+                    <i class="fa-solid fa-server mr-2"></i> Server Info
                 </button>
             </div>
             
             <!-- Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">24/7</div>
-                    <div class="text-sm text-gray-400 mt-2">Active Connection</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-3xl mx-auto">
+                <div class="glass-card p-4 md:p-6 rounded-2xl">
+                    <div class="text-2xl md:text-3xl font-bold gradient-text">Smart</div>
+                    <div class="text-xs md:text-sm text-gray-400 mt-1 md:mt-2">Gender Matching</div>
                 </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">E2EE</div>
-                    <div class="text-sm text-gray-400 mt-2">Encrypted Chat</div>
+                <div class="glass-card p-4 md:p-6 rounded-2xl">
+                    <div class="text-2xl md:text-3xl font-bold gradient-text">E2EE</div>
+                    <div class="text-xs md:text-sm text-gray-400 mt-1 md:mt-2">Encrypted</div>
                 </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">150+</div>
-                    <div class="text-sm text-gray-400 mt-2">Countries</div>
+                <div class="glass-card p-4 md:p-6 rounded-2xl">
+                    <div class="text-2xl md:text-3xl font-bold gradient-text">150+</div>
+                    <div class="text-xs md:text-sm text-gray-400 mt-1 md:mt-2">Countries</div>
                 </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-3xl font-bold gradient-text">0ms</div>
-                    <div class="text-sm text-gray-400 mt-2">Delay Target</div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- Features Section -->
-        <section id="features-section" class="mb-20 hidden animate-fade-in">
-            <h2 class="text-4xl font-display font-bold text-center mb-12">
-                Why <span class="gradient-text">Vibe Konek 2.0</span>?
-            </h2>
-            
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-primary to-cyan-500 flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Military-Grade Privacy</h3>
-                    <p class="text-gray-400">End-to-end encrypted chats that disappear when you disconnect. No logs, no tracking.</p>
-                </div>
-                
-                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-secondary to-pink-500 flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-bolt text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Lightning Fast</h3>
-                    <p class="text-gray-400">Connect to strangers worldwide in under 2 seconds with our optimized matching system.</p>
-                </div>
-                
-                <div class="glass-card p-8 rounded-3xl hover:scale-105 transition-transform duration-300">
-                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-accent to-purple-500 flex items-center justify-center mb-6">
-                        <i class="fa-solid fa-mobile-screen text-white text-2xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Mobile First</h3>
-                    <p class="text-gray-400">Designed for mobile with intuitive gestures and optimized for all screen sizes.</p>
+                <div class="glass-card p-4 md:p-6 rounded-2xl">
+                    <div class="text-2xl md:text-3xl font-bold gradient-text">File</div>
+                    <div class="text-xs md:text-sm text-gray-400 mt-1 md:mt-2">Sharing</div>
                 </div>
             </div>
         </section>
         
-        <!-- Chat Interface -->
-        <section id="chat-section" class="hidden">
-            <div class="grid lg:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
-                <!-- Video Area -->
-                <div id="video-container" class="lg:col-span-2 hidden">
-                    <div class="video-container h-full relative">
-                        <!-- Remote Video -->
-                        <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-                        
-                        <!-- Local Video (PiP) -->
-                        <div class="absolute bottom-4 right-4 w-32 md:w-48 aspect-video bg-black rounded-xl overflow-hidden border-2 border-vibe-primary">
-                            <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
-                            <div class="absolute top-2 right-2">
-                                <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Controls -->
-                        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/50 backdrop-blur-xl px-6 py-3 rounded-full border border-vibe-border">
-                            <button onclick="toggleMute()" id="mute-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                                <i class="fa-solid fa-microphone text-white"></i>
-                            </button>
-                            <button onclick="toggleVideo()" id="video-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                                <i class="fa-solid fa-video text-white"></i>
-                            </button>
-                            <button onclick="endCall()" class="w-12 h-12 rounded-full bg-red-500 flex items-center justify-center hover:bg-red-600 transition-colors">
-                                <i class="fa-solid fa-phone-slash text-white"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Loading Overlay -->
-                        <div id="video-loading" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10">
-                            <div class="loading-dots mb-4">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                            <p class="text-vibe-primary font-bold">Finding your match...</p>
-                            <p class="text-sm text-gray-400 mt-2">Checking interests and location</p>
-                        </div>
-                    </div>
-                </div>
-                
+        <!-- Desktop Chat Interface -->
+        <section id="desktop-chat-section" class="hidden desktop-hidden">
+            <div class="grid lg:grid-cols-3 gap-4 md:gap-6 h-[calc(100vh-180px)]">
                 <!-- Chat Area -->
-                <div id="text-chat-container" class="lg:col-span-2 hidden">
+                <div class="lg:col-span-2">
                     <div class="glass-card h-full flex flex-col">
                         <!-- Chat Header -->
-                        <div class="p-6 border-b border-vibe-border flex items-center justify-between">
+                        <div class="p-4 md:p-6 border-b border-[rgba(255,255,255,0.12)] flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center">
-                                    <i class="fa-solid fa-user-secret"></i>
+                                <div id="partner-avatar" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#9D4EDD] flex items-center justify-center">
+                                    <i class="fa-solid fa-user-secret text-xs md:text-sm"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold">Anonymous Chat</h3>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="font-bold text-sm md:text-base" id="partner-name">Anonymous</h3>
+                                        <span id="partner-gender" class="text-xs px-2 py-1 rounded-full bg-white/10"></span>
+                                    </div>
                                     <p class="text-xs text-gray-400" id="chat-status">Connecting...</p>
                                 </div>
                             </div>
                             
                             <div class="flex gap-2">
-                                <button onclick="requestVideoCall()" id="video-request-btn" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                                    <i class="fa-solid fa-video"></i>
+                                <button onclick="toggleFileUpload()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" title="Send File">
+                                    <i class="fa-solid fa-paperclip text-xs md:text-sm"></i>
                                 </button>
-                                <button onclick="nextPartner()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                                    <i class="fa-solid fa-arrow-rotate-right"></i>
+                                <button onclick="skipPartner()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" title="Next Partner">
+                                    <i class="fa-solid fa-forward text-xs md:text-sm"></i>
                                 </button>
                             </div>
                         </div>
                         
                         <!-- Messages -->
-                        <div id="messages-container" class="flex-1 p-6 overflow-y-auto">
-                            <div class="space-y-4" id="messages">
+                        <div id="messages-container" class="flex-1 p-4 md:p-6 overflow-y-auto">
+                            <div class="space-y-3 md:space-y-4" id="messages">
                                 <!-- Messages will appear here -->
                             </div>
                         </div>
                         
                         <!-- Input Area -->
-                        <div class="p-6 border-t border-vibe-border">
+                        <div class="p-4 md:p-6 border-t border-[rgba(255,255,255,0.12)]">
                             <div class="flex gap-3">
-                                <textarea id="message-input" rows="1" placeholder="Type your message..." class="flex-1 bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none resize-none" disabled></textarea>
-                                <button onclick="sendMessage()" id="send-btn" class="btn-primary w-14 h-14 rounded-xl flex items-center justify-center" disabled>
+                                <div class="flex-1 flex gap-2">
+                                    <button onclick="toggleFileUpload()" class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                    <textarea id="message-input" rows="1" placeholder="Type your message..." class="flex-1 bg-black/30 border border-[rgba(255,255,255,0.12)] rounded-xl px-4 py-3 text-sm focus:border-[#00D4FF] focus:outline-none resize-none" disabled></textarea>
+                                </div>
+                                <button onclick="sendMessage()" id="send-btn" class="btn-primary w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center" disabled>
                                     <i class="fa-solid fa-paper-plane"></i>
                                 </button>
                             </div>
@@ -530,7 +497,7 @@
                                     Press <kbd class="px-2 py-1 bg-black/30 rounded">Enter</kbd> to send
                                 </div>
                                 <button onclick="endChat()" class="text-sm text-red-400 hover:text-red-300">
-                                    <i class="fa-solid fa-power-off mr-1"></i> End Chat
+                                    <i class="fa-solid fa-power-off mr-1"></i> End
                                 </button>
                             </div>
                         </div>
@@ -539,58 +506,85 @@
                 
                 <!-- Side Panel -->
                 <div class="lg:col-span-1">
-                    <div class="glass-card h-full p-6 flex flex-col">
-                        <h3 class="text-xl font-bold mb-6">Your Vibe</h3>
+                    <div class="glass-card h-full p-4 md:p-6 flex flex-col">
+                        <h3 class="text-lg md:text-xl font-bold mb-4 md:mb-6">Your Vibe</h3>
                         
                         <!-- Profile -->
-                        <div class="mb-8">
+                        <div class="mb-6 md:mb-8">
                             <div class="flex items-center gap-3 mb-4">
-                                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center text-2xl">
+                                <div class="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-[#00D4FF] to-[#9D4EDD] flex items-center justify-center text-lg md:text-2xl">
                                     <i class="fa-solid fa-user"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold" id="user-name">Anonymous</h4>
-                                    <p class="text-sm text-gray-400">Online</p>
+                                    <h4 class="font-bold text-sm md:text-base" id="user-name">Anonymous</h4>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-xs text-gray-400">Gender:</span>
+                                        <span class="text-xs md:text-sm font-medium" id="user-gender-display">Not set</span>
+                                    </div>
                                 </div>
                             </div>
                             
                             <div class="space-y-3">
                                 <div>
                                     <label class="text-xs text-gray-500 block mb-1">Interests</label>
-                                    <div class="flex flex-wrap gap-2" id="interests-tags">
-                                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#chat</span>
-                                        <span class="px-3 py-1 bg-white/5 rounded-full text-xs">#global</span>
+                                    <div class="flex flex-wrap gap-1 md:gap-2" id="interests-tags">
+                                        <span class="px-2 py-0.5 md:px-3 md:py-1 bg-white/5 rounded-full text-xs">#chat</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 block mb-1">Looking for</label>
+                                    <div class="flex flex-wrap gap-1 md:gap-2" id="gender-pref-tags">
+                                        <span class="px-2 py-0.5 md:px-3 md:py-1 bg-white/5 rounded-full text-xs">Anyone</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
+                        <!-- Matching Status -->
+                        <div class="space-y-3 md:space-y-4 mb-6 md:mb-8">
+                            <h4 class="font-bold">Matching Status</h4>
+                            <div class="space-y-2 md:space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400 text-sm">Algorithm:</span>
+                                    <span class="font-bold text-green-400 text-sm" id="matching-algo">Smart</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400 text-sm">Queue:</span>
+                                    <span class="font-bold text-sm" id="queue-position">1</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400 text-sm">Match %:</span>
+                                    <span class="font-bold text-sm" id="compatibility-score">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Quick Actions -->
-                        <div class="space-y-4 mb-8">
+                        <div class="space-y-3 md:space-y-4 mb-6 md:mb-8">
                             <h4 class="font-bold">Quick Actions</h4>
-                            <button onclick="toggleTheme()" class="w-full btn-secondary py-3 rounded-xl flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-palette"></i> Toggle Theme
+                            <button onclick="changeGenderPref()" class="w-full btn-secondary py-2.5 md:py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-venus-mars"></i> Gender Filter
                             </button>
-                            <button onclick="openSafety()" class="w-full btn-secondary py-3 rounded-xl flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-shield"></i> Safety Guide
+                            <button onclick="openServerInfo()" class="w-full btn-secondary py-2.5 md:py-3 rounded-xl flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-server"></i> Server Info
                             </button>
                         </div>
                         
                         <!-- Stats -->
                         <div class="mt-auto">
-                            <h4 class="font-bold mb-4">Session Stats</h4>
-                            <div class="space-y-3">
+                            <h4 class="font-bold mb-3 md:mb-4">Session Stats</h4>
+                            <div class="space-y-2 md:space-y-3">
                                 <div class="flex justify-between">
-                                    <span class="text-gray-400">Time</span>
-                                    <span class="font-bold" id="session-time">0:00</span>
+                                    <span class="text-gray-400 text-sm">Time</span>
+                                    <span class="font-bold text-sm" id="session-time">0:00</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-400">Messages</span>
-                                    <span class="font-bold" id="message-count">0</span>
+                                    <span class="text-gray-400 text-sm">Messages</span>
+                                    <span class="font-bold text-sm" id="message-count">0</span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-gray-400">Partner</span>
-                                    <span class="font-bold" id="partner-count">1</span>
+                                    <span class="text-gray-400 text-sm">Partners</span>
+                                    <span class="font-bold text-sm" id="partner-count">0</span>
                                 </div>
                             </div>
                         </div>
@@ -598,32 +592,87 @@
                 </div>
             </div>
         </section>
+        
+        <!-- Mobile Chat Interface -->
+        <section id="mobile-chat-section" class="hidden mobile-chat-container">
+            <!-- Mobile Chat Header -->
+            <div class="mobile-chat-header">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button onclick="closeMobileChat()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div class="flex items-center gap-2">
+                            <div id="mobile-partner-avatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#9D4EDD] flex items-center justify-center">
+                                <i class="fa-solid fa-user-secret text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-1">
+                                    <h3 class="font-bold text-sm" id="mobile-partner-name">Anonymous</h3>
+                                    <span id="mobile-partner-gender" class="text-xs px-1.5 py-0.5 rounded-full bg-white/10"></span>
+                                </div>
+                                <p class="text-xs text-gray-400" id="mobile-chat-status">Connecting...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-1">
+                        <button onclick="toggleMobileFileUpload()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                            <i class="fa-solid fa-paperclip text-xs"></i>
+                        </button>
+                        <button onclick="skipPartner()" class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                            <i class="fa-solid fa-forward text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Messages -->
+            <div class="mobile-chat-messages" id="mobile-messages-container">
+                <div class="space-y-3" id="mobile-messages">
+                    <!-- Messages will appear here -->
+                </div>
+            </div>
+            
+            <!-- Mobile Input Area -->
+            <div class="mobile-chat-input">
+                <div class="flex gap-2">
+                    <button onclick="toggleMobileFileUpload()" class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                    <textarea id="mobile-message-input" rows="1" placeholder="Type message..." class="flex-1 bg-black/30 border border-[rgba(255,255,255,0.12)] rounded-xl px-3 py-2.5 text-sm focus:border-[#00D4FF] focus:outline-none resize-none" disabled></textarea>
+                    <button onclick="sendMobileMessage()" id="mobile-send-btn" class="btn-primary w-10 h-10 rounded-xl flex items-center justify-center" disabled>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
     </main>
     
     <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
-        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div class="p-6 border-b border-vibe-border flex items-center justify-between">
-                <h2 class="text-2xl font-bold">Chat Settings</h2>
-                <button onclick="closeSettings()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
+        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-4 md:p-6 border-b border-[rgba(255,255,255,0.12)] flex items-center justify-between">
+                <h2 class="text-xl md:text-2xl font-bold">Smart Matching Settings</h2>
+                <button onclick="closeSettings()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             
-            <div class="p-6 space-y-6">
+            <div class="p-4 md:p-6 space-y-4 md:space-y-6">
                 <!-- Profile -->
                 <div>
-                    <h3 class="text-lg font-bold mb-4">Your Profile</h3>
-                    <div class="space-y-4">
+                    <h3 class="text-base md:text-lg font-bold mb-3 md:mb-4">Your Profile</h3>
+                    <div class="space-y-3 md:space-y-4">
                         <div>
                             <label class="text-sm text-gray-400 block mb-2">Display Name</label>
-                            <input type="text" id="display-name" placeholder="Anonymous" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none" />
+                            <input type="text" id="display-name" placeholder="Anonymous" class="w-full bg-black/30 border border-[rgba(255,255,255,0.12)] rounded-xl px-3 md:px-4 py-2.5 md:py-3 focus:border-[#00D4FF] focus:outline-none text-sm md:text-base" />
                         </div>
                         
                         <div>
-                            <label class="text-sm text-gray-400 block mb-2">Gender</label>
-                            <select id="gender-select" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none">
-                                <option value="any">Any</option>
+                            <label class="text-sm text-gray-400 block mb-2">Your Gender</label>
+                            <select id="gender-select" class="w-full bg-black/30 border border-[rgba(255,255,255,0.12)] rounded-xl px-3 md:px-4 py-2.5 md:py-3 focus:border-[#00D4FF] focus:outline-none text-sm md:text-base">
+                                <option value="prefer-not-to-say">Prefer not to say</option>
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
                                 <option value="other">Other</option>
@@ -631,617 +680,882 @@
                         </div>
                         
                         <div>
+                            <label class="text-sm text-gray-400 block mb-2">Connect with</label>
+                            <select id="gender-pref" class="w-full bg-black/30 border border-[rgba(255,255,255,0.12)] rounded-xl px-3 md:px-4 py-2.5 md:py-3 focus:border-[#00D4FF] focus:outline-none text-sm md:text-base">
+                                <option value="any">Anyone</option>
+                                <option value="male">Males only</option>
+                                <option value="female">Females only</option>
+                                <option value="same">Same gender</option>
+                                <option value="opposite">Opposite gender</option>
+                            </select>
+                        </div>
+                        
+                        <div>
                             <label class="text-sm text-gray-400 block mb-2">Interests (comma separated)</label>
-                            <input type="text" id="interests-input" placeholder="music, gaming, tech" class="w-full bg-black/30 border border-vibe-border rounded-xl px-4 py-3 focus:border-vibe-primary focus:outline-none" />
+                            <input type="text" id="interests-input" placeholder="music, gaming, tech, movies, sports" class="w-full bg-black/30 border border-[rgba(255,255,255,0.12)] rounded-xl px-3 md:px-4 py-2.5 md:py-3 focus:border-[#00D4FF] focus:outline-none text-sm md:text-base" />
                         </div>
                     </div>
                 </div>
                 
-                <!-- Chat Mode -->
+                <!-- Matching Preferences -->
                 <div>
-                    <h3 class="text-lg font-bold mb-4">Connection Mode</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="selectMode('text')" id="text-mode-btn" class="p-6 rounded-2xl border-2 border-vibe-primary bg-vibe-primary/10 flex flex-col items-center justify-center gap-3">
-                            <i class="fa-solid fa-comments text-3xl text-vibe-primary"></i>
-                            <span class="font-bold">Text Chat</span>
+                    <h3 class="text-base md:text-lg font-bold mb-3 md:mb-4">Matching Preferences</h3>
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <button onclick="selectMatchSpeed('fast')" id="speed-fast" class="p-3 md:p-4 rounded-xl border border-[#00D4FF] bg-[#00D4FF]/10 flex flex-col items-center justify-center gap-2">
+                            <i class="fa-solid fa-bolt text-lg md:text-xl text-[#00D4FF]"></i>
+                            <span class="font-bold text-xs md:text-sm">Fast</span>
+                            <span class="text-xs text-gray-400">Quick match</span>
                         </button>
                         
-                        <button onclick="selectMode('video')" id="video-mode-btn" class="p-6 rounded-2xl border-2 border-vibe-border bg-white/5 flex flex-col items-center justify-center gap-3 hover:border-vibe-primary transition-colors">
-                            <i class="fa-solid fa-video text-3xl text-gray-400"></i>
-                            <span class="font-bold">Video Call</span>
+                        <button onclick="selectMatchSpeed('balanced')" id="speed-balanced" class="p-3 md:p-4 rounded-xl border border-[rgba(255,255,255,0.12)] bg-white/5 flex flex-col items-center justify-center gap-2 hover:border-[#00D4FF] transition-colors">
+                            <i class="fa-solid fa-scale-balanced text-lg md:text-xl text-gray-400"></i>
+                            <span class="font-bold text-xs md:text-sm">Balanced</span>
+                            <span class="text-xs text-gray-400">Better match</span>
                         </button>
                     </div>
                 </div>
                 
                 <!-- Start Button -->
-                <button onclick="startChat()" class="w-full btn-primary py-4 rounded-xl text-lg font-bold flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-play"></i> Start Connection
+                <button onclick="startSmartMatching()" class="w-full btn-primary py-3 md:py-4 rounded-xl text-base md:text-lg font-bold flex items-center justify-center gap-2 md:gap-3">
+                    <i class="fa-solid fa-play"></i> Start Smart Matching
                 </button>
             </div>
         </div>
     </div>
     
-    <!-- Safety Modal -->
-    <div id="safety-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
-        <div class="glass-card max-w-lg w-full max-h-[90vh] overflow-y-auto animate-slide-up">
-            <div class="p-6 border-b border-vibe-border flex items-center justify-between">
-                <h2 class="text-2xl font-bold">Safety Guidelines</h2>
-                <button onclick="closeSafety()" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
+    <!-- File Upload Modal -->
+    <div id="file-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-md w-full">
+            <div class="p-4 md:p-6 border-b border-[rgba(255,255,255,0.12)] flex items-center justify-between">
+                <h2 class="text-xl md:text-2xl font-bold">Send File</h2>
+                <button onclick="closeFileModal()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
+                    <i class="fa-solid fa-times"></i>
                 </button>
             </div>
             
-            <div class="p-6 space-y-6">
-                <div class="space-y-4">
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-user-secret text-red-500"></i>
+            <div class="p-4 md:p-6">
+                <div id="file-dropzone" class="file-dropzone">
+                    <i class="fa-solid fa-cloud-upload-alt text-3xl md:text-4xl text-gray-400 mb-3"></i>
+                    <p class="text-gray-300 font-bold mb-1">Drop file here or click to upload</p>
+                    <p class="text-xs text-gray-500">Max file size: 5MB • Images, PDF, Text</p>
+                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.txt,.doc,.docx" />
+                </div>
+                
+                <div id="file-preview" class="hidden mt-4">
+                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-file text-lg text-[#00D4FF]"></i>
+                            <div>
+                                <p class="font-bold text-sm" id="file-name"></p>
+                                <p class="text-xs text-gray-400" id="file-size"></p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="font-bold mb-1">Protect Your Identity</h4>
-                            <p class="text-gray-400 text-sm">Never share personal information like your real name, address, phone number, or financial details.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-flag text-yellow-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold mb-1">Report Inappropriate Behavior</h4>
-                            <p class="text-gray-400 text-sm">Use the report button if you encounter harassment, bullying, or inappropriate content.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                            <i class="fa-solid fa-hand text-green-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold mb-1">You're In Control</h4>
-                            <p class="text-gray-400 text-sm">You can disconnect at any time. Don't feel pressured to continue uncomfortable conversations.</p>
-                        </div>
+                        <button onclick="removeFile()" class="text-red-400 hover:text-red-300">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
                     </div>
                 </div>
                 
-                <div class="pt-6 border-t border-vibe-border">
-                    <p class="text-sm text-gray-500">
-                        By using Vibe Konek, you agree to our 
-                        <a href="#" class="text-vibe-primary hover:underline">Terms of Service</a> and 
-                        <a href="#" class="text-vibe-primary hover:underline">Privacy Policy</a>.
-                    </p>
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeFileModal()" class="flex-1 btn-secondary py-3 rounded-xl font-bold">
+                        Cancel
+                    </button>
+                    <button onclick="sendFile()" id="send-file-btn" class="flex-1 btn-primary py-3 rounded-xl font-bold" disabled>
+                        <i class="fa-solid fa-paper-plane mr-2"></i> Send
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- End Chat Modal -->
-    <div id="end-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
-        <div class="glass-card max-w-md w-full p-8 text-center animate-slide-up">
-            <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-vibe-primary to-vibe-accent flex items-center justify-center mx-auto mb-6">
-                <i class="fa-solid fa-link-slash text-white text-3xl"></i>
+    <!-- Server Info Modal -->
+    <div id="server-info-modal" class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 hidden">
+        <div class="glass-card max-w-md w-full">
+            <div class="p-4 md:p-6 border-b border-[rgba(255,255,255,0.12)] flex items-center justify-between">
+                <h2 class="text-xl md:text-2xl font-bold">Server Information</h2>
+                <button onclick="closeServerInfo()" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <i class="fa-solid fa-times"></i>
+                </button>
             </div>
             
-            <h3 class="text-2xl font-bold mb-3" id="end-title">Chat Ended</h3>
-            <p class="text-gray-400 mb-8" id="end-message">Your connection has been disconnected.</p>
-            
-            <div class="space-y-3">
-                <button onclick="nextPartner()" class="w-full btn-primary py-4 rounded-xl font-bold">
-                    <i class="fa-solid fa-rotate-right mr-2"></i> Find New Partner
-                </button>
-                <button onclick="goHome()" class="w-full btn-secondary py-4 rounded-xl font-bold">
-                    <i class="fa-solid fa-home mr-2"></i> Return Home
-                </button>
+            <div class="p-4 md:p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Status:</span>
+                    <span class="font-bold text-green-400" id="server-connection-status">Connected</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Server:</span>
+                    <span class="font-bold" id="current-server">vibekonek-server.onrender.com</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Online Users:</span>
+                    <span class="font-bold" id="server-online-count">0</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400">Ping:</span>
+                    <span class="font-bold" id="server-ping">0ms</span>
+                </div>
+                
+                <div class="pt-4 border-t border-[rgba(255,255,255,0.12)]">
+                    <h4 class="font-bold mb-2">Server Actions</h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="reconnectServer()" class="btn-secondary py-2.5 rounded-xl text-sm">
+                            <i class="fa-solid fa-rotate mr-1"></i> Reconnect
+                        </button>
+                        <button onclick="disconnectServer()" class="btn-secondary py-2.5 rounded-xl text-sm">
+                            <i class="fa-solid fa-plug mr-1"></i> Disconnect
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
     <!-- Footer -->
-    <footer class="py-8 px-4 border-t border-vibe-border bg-black/30">
+    <footer class="py-6 md:py-8 px-4 border-t border-[rgba(255,255,255,0.12)] bg-black/30">
         <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl glass-card flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-vibe-primary"></i>
+                    <div class="w-8 h-8 md:w-10 md:h-10 rounded-xl glass-card flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-[#00D4FF]"></i>
                     </div>
                     <div>
-                        <h3 class="font-display font-bold">Vibe Konek 2.0</h3>
-                        <p class="text-xs text-gray-500">Anonymous Connections Redefined</p>
+                        <h3 class="font-bold text-sm md:text-base">Vibe Konek</h3>
+                        <p class="text-xs text-gray-500">Smart Anonymous Connections</p>
                     </div>
                 </div>
                 
-                <div class="flex flex-wrap gap-6 text-sm">
+                <div class="flex flex-wrap gap-4 md:gap-6 text-xs md:text-sm">
                     <button onclick="openSafety()" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa-solid fa-shield mr-2"></i> Safety
+                        <i class="fa-solid fa-shield mr-1"></i> Safety
                     </button>
-                    <button onclick="openFirebaseConfig()" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fa-solid fa-database mr-2"></i> Firebase Setup
+                    <button onclick="openServerInfo()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-server mr-1"></i> Server
                     </button>
-                    <a href="https://github.com" target="_blank" class="text-gray-400 hover:text-white transition-colors">
-                        <i class="fab fa-github mr-2"></i> GitHub
-                    </a>
+                    <button onclick="openSettings()" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-sliders-h mr-1"></i> Settings
+                    </button>
                 </div>
                 
-                <div class="text-sm text-gray-500">
-                    © 2025 Vibe Konek 2.0. All rights reserved.
+                <div class="text-xs text-gray-500">
+                    © 2025 Vibe Konek. Smart matching system.
                 </div>
             </div>
         </div>
     </footer>
 
     <script>
-        // Firebase Configuration
-        let firebaseConfig = null;
-        let db = null;
-        let auth = null;
-        let currentUser = null;
-        let peerConnection = null;
-        let localStream = null;
-        let remoteStream = null;
+        // --- SOCKET.IO CONNECTION ---
+        let socket = null;
+        const SERVER_URL = "https://vibekonek-server.onrender.com";
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        const MAX_RECONNECT_ATTEMPTS = 5;
         
-        // App State
+        // --- GLOBAL STATE ---
         let appState = {
-            currentMode: null, // 'text' or 'video'
-            isConnected: false,
-            isMuted: false,
-            isVideoOff: false,
-            partnerId: null,
-            chatRoomId: null,
+            userId: generateId(),
             userName: 'Anonymous',
-            userInterests: ['chat', 'global'],
+            userGender: 'prefer-not-to-say',
+            genderPreference: 'any',
+            interests: ['chat'],
+            partner: null,
+            isChatting: false,
+            isSearching: false,
+            currentMode: 'text',
             sessionStart: null,
             messageCount: 0,
-            partnerCount: 0
+            partnerCount: 0,
+            compatibilityScore: 0,
+            queuePosition: 1,
+            matchSpeed: 'balanced',
+            fileToSend: null
         };
         
-        // DOM Elements
-        const setupModal = document.getElementById('setup-modal');
+        // --- DOM ELEMENTS ---
+        const serverModal = document.getElementById('server-modal');
         const settingsModal = document.getElementById('settings-modal');
-        const safetyModal = document.getElementById('safety-modal');
-        const endModal = document.getElementById('end-modal');
+        const fileModal = document.getElementById('file-modal');
+        const serverInfoModal = document.getElementById('server-info-modal');
         const homeSection = document.getElementById('home-section');
-        const featuresSection = document.getElementById('features-section');
-        const chatSection = document.getElementById('chat-section');
-        const videoContainer = document.getElementById('video-container');
-        const textChatContainer = document.getElementById('text-chat-container');
-        const messagesContainer = document.getElementById('messages');
-        const messageInput = document.getElementById('message-input');
-        const sendBtn = document.getElementById('send-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+        const desktopChatSection = document.getElementById('desktop-chat-section');
+        const mobileChatSection = document.getElementById('mobile-chat-section');
         
-        // Auto-Initialize Firebase with Vibe Konek Credentials
-        function initFirebase() {
-            // Your exact credentials from Config.txt
-            const autoConfig = {
-                apiKey: "AIzaSyDyN1qkKDXTLRTS--6spf-m1D7T1Wf29YQ",
-                authDomain: "vibe-konek-596f7.firebaseapp.com",
-                projectId: "vibe-konek-596f7",
-                storageBucket: "vibe-konek-596f7.firebasestorage.app",
-                messagingSenderId: "288414546178",
-                appId: "1:288414546178:web:6c0e400b1228302a672a1b",
-                measurementId: "G-E37S40K369"
+        // --- UTILITY FUNCTIONS ---
+        function generateId() {
+            return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        function updateGenderDisplay(gender) {
+            const display = document.getElementById('user-gender-display');
+            const genderMap = {
+                'male': 'Male',
+                'female': 'Female', 
+                'other': 'Other',
+                'prefer-not-to-say': 'Not specified'
             };
-
-            firebaseConfig = autoConfig; // Set global config
-            initializeFirebaseApp();
-            return true;
+            display.textContent = genderMap[gender] || 'Not set';
         }
         
-        // This function stays hidden unless you want to change settings later
-        function showSetupModal() {
-            // Logic kept but not triggered by default to ensure "Successful Matching"
-            console.log("Using hardcoded Firebase config.");
-        }
-        
-        function skipFirebase() {
-            setupModal.classList.add('hidden');
-        }
-        
-        // Modified to allow updating if needed
-        document.getElementById('config-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            firebaseConfig = {
-                apiKey: document.getElementById('fb-apiKey').value,
-                authDomain: document.getElementById('fb-authDomain').value,
-                projectId: document.getElementById('fb-projectId').value,
-                storageBucket: document.getElementById('fb-storageBucket').value || '',
-                messagingSenderId: document.getElementById('fb-messagingSenderId').value || '',
-                appId: document.getElementById('fb-appId').value
+        function updateGenderPreferenceDisplay(pref) {
+            const container = document.getElementById('gender-pref-tags');
+            container.innerHTML = '';
+            
+            const prefMap = {
+                'any': 'Anyone',
+                'male': 'Males only',
+                'female': 'Females only',
+                'same': 'Same gender',
+                'opposite': 'Opposite gender'
             };
-            localStorage.setItem('vibekonek_firebase_config', JSON.stringify(firebaseConfig));
-            location.reload(); // Reload to apply new settings
-        });
+            
+            const tag = document.createElement('span');
+            tag.className = 'px-2 py-0.5 md:px-3 md:py-1 bg-white/5 rounded-full text-xs';
+            tag.textContent = prefMap[pref] || 'Anyone';
+            container.appendChild(tag);
+        }
         
-        function initializeFirebaseApp() {
-            try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
-                db = firebase.firestore();
-                auth = firebase.auth();
+        function getGenderColor(gender) {
+            const colors = {
+                'male': 'gender-male',
+                'female': 'gender-female',
+                'other': 'gender-other'
+            };
+            return colors[gender] || 'text-gray-400';
+        }
+        
+        function getGenderIcon(gender) {
+            const icons = {
+                'male': 'fa-mars',
+                'female': 'fa-venus',
+                'other': 'fa-transgender'
+            };
+            return icons[gender] || 'fa-user';
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // --- SOCKET.IO FUNCTIONS ---
+        function connectSocket() {
+            socket = io(SERVER_URL, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+                reconnectionDelay: 1000,
+                timeout: 10000
+            });
+            
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                isConnected = true;
+                reconnectAttempts = 0;
                 
-                // CRITICAL FOR MATCHING: Anonymous Auth
-                auth.signInAnonymously()
-                    .then(() => {
-                        console.log('Vibe Konek Engine: Online');
-                        // Hide setup modal if it was open
-                        setupModal.classList.add('hidden');
-                    })
-                    .catch(error => {
-                        console.error('Auth failed. Check Firebase Console:', error);
-                    });
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
+                updateServerStatus('Connected', 'green-400');
+                document.getElementById('server-status').textContent = 'Connected successfully!';
+                
+                // Hide server modal after 1 second
+                setTimeout(() => {
+                    serverModal.classList.add('hidden');
+                }, 1000);
+                
+                // Update server info
+                updateServerInfo();
+                
+                // Start ping interval
+                startPing();
+                
+                // Register user
+                socket.emit('register', {
+                    userId: appState.userId,
+                    name: appState.userName,
+                    gender: appState.userGender,
+                    genderPreference: appState.genderPreference,
+                    interests: appState.interests
+                });
+            });
+            
+            socket.on('onlineCount', (count) => {
+                updateOnlineCount(count);
+            });
+            
+            socket.on('matchFound', (partner) => {
+                handleMatchFound(partner);
+            });
+            
+            socket.on('message', (data) => {
+                handleIncomingMessage(data);
+            });
+            
+            socket.on('file', (data) => {
+                handleIncomingFile(data);
+            });
+            
+            socket.on('partnerDisconnected', () => {
+                handlePartnerDisconnect();
+            });
+            
+            socket.on('queueUpdate', (position) => {
+                updateQueuePosition(position);
+            });
+            
+            socket.on('disconnect', (reason) => {
+                handleDisconnect(reason);
+            });
+            
+            socket.on('connect_error', (error) => {
+                handleConnectionError(error);
+            });
+        }
+        
+        function updateServerStatus(status, color) {
+            const statusEl = document.getElementById('server-connection-status');
+            statusEl.textContent = status;
+            statusEl.className = `font-bold text-${color}`;
+        }
+        
+        function updateServerInfo() {
+            if (socket && socket.connected) {
+                document.getElementById('current-server').textContent = SERVER_URL.replace('https://', '');
             }
         }
         
-        // UI Functions
+        function startPing() {
+            setInterval(() => {
+                if (socket && socket.connected) {
+                    const start = Date.now();
+                    socket.emit('ping');
+                    socket.once('pong', () => {
+                        const ping = Date.now() - start;
+                        document.getElementById('server-ping').textContent = `${ping}ms`;
+                    });
+                }
+            }, 5000);
+        }
+        
+        function updateOnlineCount(count) {
+            document.getElementById('online-count').textContent = count;
+            document.getElementById('mobile-online-count').textContent = count;
+            document.getElementById('server-online-count').textContent = count;
+        }
+        
+        function updateQueuePosition(position) {
+            appState.queuePosition = position;
+            document.getElementById('queue-position').textContent = position;
+            
+            if (position > 1) {
+                document.getElementById('chat-status').textContent = `In queue: #${position}`;
+                document.getElementById('mobile-chat-status').textContent = `In queue: #${position}`;
+            }
+        }
+        
+        // --- MATCHING FUNCTIONS ---
+        function handleMatchFound(partner) {
+            appState.partner = partner;
+            appState.isChatting = true;
+            appState.isSearching = false;
+            appState.partnerCount++;
+            
+            // Calculate compatibility
+            const compatibility = calculateCompatibility(partner);
+            appState.compatibilityScore = compatibility;
+            
+            // Update UI
+            updatePartnerUI(partner, compatibility);
+            
+            // Enable chat input
+            enableChatInput();
+            
+            // Add welcome messages
+            addMessage('system', `Matched with ${partner.name || 'Anonymous'}!`);
+            addMessage('system', `Gender: ${partner.gender || 'Not specified'} • Match: ${compatibility}%`);
+            
+            // Update stats
+            updateStats();
+        }
+        
+        function calculateCompatibility(partner) {
+            let score = 50; // Base score
+            
+            // Gender preference match
+            if (appState.genderPreference !== 'any') {
+                if (appState.genderPreference === 'same' && appState.userGender === partner.gender) {
+                    score += 20;
+                } else if (appState.genderPreference === 'opposite' && appState.userGender !== partner.gender) {
+                    score += 20;
+                } else if (appState.genderPreference === partner.gender) {
+                    score += 20;
+                }
+            }
+            
+            // Interest matching
+            const commonInterests = getCommonInterests(partner.interests).length;
+            score += Math.min(commonInterests * 10, 30);
+            
+            return Math.min(Math.round(score), 100);
+        }
+        
+        function getCommonInterests(partnerInterests) {
+            if (!partnerInterests) return [];
+            return appState.interests.filter(interest => 
+                partnerInterests.some(pi => 
+                    pi.toLowerCase().includes(interest.toLowerCase()) || 
+                    interest.toLowerCase().includes(pi.toLowerCase())
+                )
+            );
+        }
+        
+        function updatePartnerUI(partner, compatibility) {
+            // Update desktop UI
+            document.getElementById('partner-name').textContent = partner.name || 'Anonymous';
+            document.getElementById('mobile-partner-name').textContent = partner.name || 'Anonymous';
+            
+            const genderSpan = document.getElementById('partner-gender');
+            const mobileGenderSpan = document.getElementById('mobile-partner-gender');
+            
+            const genderText = partner.gender === 'male' ? 'Male' : 
+                              partner.gender === 'female' ? 'Female' : 
+                              partner.gender === 'other' ? 'Other' : 'Unknown';
+            
+            genderSpan.textContent = genderText;
+            mobileGenderSpan.textContent = genderText;
+            
+            genderSpan.className = `text-xs px-2 py-1 rounded-full ${getGenderColor(partner.gender)} bg-white/10`;
+            mobileGenderSpan.className = `text-xs px-1.5 py-0.5 rounded-full ${getGenderColor(partner.gender)} bg-white/10`;
+            
+            // Update avatars
+            document.getElementById('partner-avatar').innerHTML = `<i class="fa-solid ${getGenderIcon(partner.gender)}"></i>`;
+            document.getElementById('mobile-partner-avatar').innerHTML = `<i class="fa-solid ${getGenderIcon(partner.gender)}"></i>`;
+            
+            // Update status
+            document.getElementById('chat-status').textContent = 'Connected';
+            document.getElementById('mobile-chat-status').textContent = 'Connected';
+            
+            // Update compatibility
+            document.getElementById('compatibility-score').textContent = `${compatibility}%`;
+        }
+        
+        // --- CHAT FUNCTIONS ---
+        function enableChatInput() {
+            const messageInput = document.getElementById('message-input');
+            const mobileMessageInput = document.getElementById('mobile-message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const mobileSendBtn = document.getElementById('mobile-send-btn');
+            
+            if (messageInput) messageInput.disabled = false;
+            if (mobileMessageInput) mobileMessageInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            if (mobileSendBtn) mobileSendBtn.disabled = false;
+            
+            // Focus on input
+            if (window.innerWidth >= 768) {
+                messageInput?.focus();
+            } else {
+                mobileMessageInput?.focus();
+            }
+        }
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const mobileMessageInput = document.getElementById('mobile-message-input');
+            
+            const text = window.innerWidth >= 768 ? 
+                messageInput.value.trim() : 
+                mobileMessageInput.value.trim();
+            
+            if (!text || !appState.isChatting) return;
+            
+            // Add message to UI
+            addMessage('user', text);
+            
+            // Clear input
+            if (messageInput) messageInput.value = '';
+            if (mobileMessageInput) mobileMessageInput.value = '';
+            
+            // Send via socket
+            if (socket && socket.connected && appState.partner) {
+                socket.emit('message', {
+                    to: appState.partner.userId,
+                    text: text,
+                    sender: appState.userId,
+                    type: 'text'
+                });
+                
+                appState.messageCount++;
+                updateStats();
+            }
+        }
+        
+        function sendMobileMessage() {
+            sendMessage();
+        }
+        
+        function handleIncomingMessage(data) {
+            if (data.sender === appState.partner?.userId) {
+                addMessage('stranger', data.text);
+                appState.messageCount++;
+                updateStats();
+            }
+        }
+        
+        function addMessage(sender, text, isFile = false, fileData = null) {
+            const isMobile = window.innerWidth < 768;
+            const containerId = isMobile ? 'mobile-messages' : 'messages';
+            const container = document.getElementById(containerId);
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' ? 'flex justify-end mb-3' : 'flex justify-start mb-3';
+            
+            if (sender === 'system') {
+                messageDiv.className = 'flex justify-center mb-3';
+                const systemMsg = document.createElement('div');
+                systemMsg.className = 'px-3 py-1.5 bg-white/5 rounded-full text-xs text-gray-400';
+                systemMsg.textContent = text;
+                messageDiv.appendChild(systemMsg);
+            } else {
+                const bubble = document.createElement('div');
+                bubble.className = sender === 'user' ? 'bubble-user' : 'bubble-stranger';
+                bubble.style.maxWidth = '85%';
+                
+                if (isFile && fileData) {
+                    // File message
+                    const fileDiv = document.createElement('div');
+                    fileDiv.className = 'p-3';
+                    
+                    if (fileData.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = fileData.data;
+                        img.className = 'rounded-lg max-w-full h-auto';
+                        img.alt = 'Shared image';
+                        fileDiv.appendChild(img);
+                        
+                        const downloadBtn = document.createElement('button');
+                        downloadBtn.className = 'mt-2 text-xs text-[#00D4FF] hover:underline flex items-center gap-1';
+                        downloadBtn.innerHTML = `<i class="fa-solid fa-download"></i> Download`;
+                        downloadBtn.onclick = () => downloadFile(fileData.data, fileData.name);
+                        fileDiv.appendChild(downloadBtn);
+                    } else {
+                        const fileInfo = document.createElement('div');
+                        fileInfo.className = 'flex items-center gap-3 p-3 bg-white/5 rounded-lg';
+                        fileInfo.innerHTML = `
+                            <i class="fa-solid fa-file text-lg text-[#00D4FF]"></i>
+                            <div>
+                                <p class="font-bold text-sm">${fileData.name}</p>
+                                <p class="text-xs text-gray-400">${formatFileSize(fileData.size)}</p>
+                            </div>
+                            <button class="ml-auto text-[#00D4FF] hover:text-[#0099FF]" onclick="downloadFile('${fileData.data}', '${fileData.name}')">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        `;
+                        fileDiv.appendChild(fileInfo);
+                    }
+                    
+                    bubble.appendChild(fileDiv);
+                } else {
+                    // Text message
+                    const messageText = document.createElement('p');
+                    messageText.className = 'p-3';
+                    messageText.textContent = text;
+                    bubble.appendChild(messageText);
+                }
+                
+                messageDiv.appendChild(bubble);
+            }
+            
+            container.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            const messagesContainer = isMobile ? 
+                document.getElementById('mobile-messages-container') : 
+                document.getElementById('messages-container');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function downloadFile(dataUrl, fileName) {
+            const link = document.createElement('a');
+            link.href = dataUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // --- FILE SHARING FUNCTIONS ---
+        function toggleFileUpload() {
+            const modal = document.getElementById('file-modal');
+            modal.classList.remove('hidden');
+            
+            // Setup file dropzone
+            const dropzone = document.getElementById('file-dropzone');
+            const fileInput = document.getElementById('file-input');
+            
+            dropzone.onclick = () => fileInput.click();
+            
+            dropzone.ondragover = (e) => {
+                e.preventDefault();
+                dropzone.classList.add('drag-over');
+            };
+            
+            dropzone.ondragleave = () => {
+                dropzone.classList.remove('drag-over');
+            };
+            
+            dropzone.ondrop = (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('drag-over');
+                if (e.dataTransfer.files.length) {
+                    handleFileSelect(e.dataTransfer.files[0]);
+                }
+            };
+            
+            fileInput.onchange = (e) => {
+                if (e.target.files.length) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            };
+        }
+        
+        function toggleMobileFileUpload() {
+            toggleFileUpload();
+        }
+        
+        function handleFileSelect(file) {
+            // Check file size (5MB limit)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File too large! Maximum size is 5MB.');
+                return;
+            }
+            
+            appState.fileToSend = file;
+            
+            // Show preview
+            const preview = document.getElementById('file-preview');
+            const fileName = document.getElementById('file-name');
+            const fileSize = document.getElementById('file-size');
+            const sendFileBtn = document.getElementById('send-file-btn');
+            
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            preview.classList.remove('hidden');
+            sendFileBtn.disabled = false;
+            
+            // If it's an image, show thumbnail
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // You could show thumbnail here if needed
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function removeFile() {
+            appState.fileToSend = null;
+            document.getElementById('file-preview').classList.add('hidden');
+            document.getElementById('file-input').value = '';
+            document.getElementById('send-file-btn').disabled = true;
+        }
+        
+        function sendFile() {
+            if (!appState.fileToSend || !appState.isChatting || !appState.partner) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileData = {
+                    name: appState.fileToSend.name,
+                    type: appState.fileToSend.type,
+                    size: appState.fileToSend.size,
+                    data: e.target.result
+                };
+                
+                // Add to UI
+                addMessage('user', '', true, fileData);
+                
+                // Send via socket
+                if (socket && socket.connected) {
+                    socket.emit('file', {
+                        to: appState.partner.userId,
+                        file: fileData,
+                        sender: appState.userId
+                    });
+                }
+                
+                // Close modal
+                closeFileModal();
+                appState.fileToSend = null;
+            };
+            
+            reader.readAsDataURL(appState.fileToSend);
+        }
+        
+        function handleIncomingFile(data) {
+            if (data.sender === appState.partner?.userId) {
+                addMessage('stranger', '', true, data.file);
+            }
+        }
+        
+        // --- UI FUNCTIONS ---
         function toggleMobileMenu() {
-            mobileMenu.classList.toggle('hidden');
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
         }
         
         function openSettings() {
             // Load current settings
             document.getElementById('display-name').value = appState.userName;
-            document.getElementById('interests-input').value = appState.userInterests.join(', ');
+            document.getElementById('gender-select').value = appState.userGender;
+            document.getElementById('gender-pref').value = appState.genderPreference;
+            document.getElementById('interests-input').value = appState.interests.join(', ');
             
-            // Highlight current mode
-            const textBtn = document.getElementById('text-mode-btn');
-            const videoBtn = document.getElementById('video-mode-btn');
-            
-            textBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
-            textBtn.querySelector('i').classList.remove('text-vibe-primary');
-            textBtn.querySelector('i').classList.add('text-gray-400');
-            
-            videoBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
-            videoBtn.querySelector('i').classList.remove('text-vibe-primary');
-            videoBtn.querySelector('i').classList.add('text-gray-400');
-            
-            if (appState.currentMode === 'text') {
-                textBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
-                textBtn.querySelector('i').classList.remove('text-gray-400');
-                textBtn.querySelector('i').classList.add('text-vibe-primary');
-            } else if (appState.currentMode === 'video') {
-                videoBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
-                videoBtn.querySelector('i').classList.remove('text-gray-400');
-                videoBtn.querySelector('i').classList.add('text-vibe-primary');
-            }
+            // Highlight current match speed
+            selectMatchSpeed(appState.matchSpeed);
             
             settingsModal.classList.remove('hidden');
+            mobileChatSection.classList.add('hidden');
+            document.getElementById('mobile-menu').classList.add('hidden');
         }
         
         function closeSettings() {
             settingsModal.classList.add('hidden');
         }
         
-        function openSafety() {
-            safetyModal.classList.remove('hidden');
-        }
-        
-        function closeSafety() {
-            safetyModal.classList.add('hidden');
-        }
-        
-        function selectMode(mode) {
-            appState.currentMode = mode;
+        function selectMatchSpeed(speed) {
+            appState.matchSpeed = speed;
             
-            const textBtn = document.getElementById('text-mode-btn');
-            const videoBtn = document.getElementById('video-mode-btn');
+            const fastBtn = document.getElementById('speed-fast');
+            const balancedBtn = document.getElementById('speed-balanced');
             
             // Reset both buttons
-            textBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
-            textBtn.querySelector('i').classList.remove('text-vibe-primary');
-            textBtn.querySelector('i').classList.add('text-gray-400');
+            fastBtn.classList.remove('border-[#00D4FF]', 'bg-[#00D4FF]/10');
+            fastBtn.querySelector('i').classList.remove('text-[#00D4FF]');
+            fastBtn.querySelector('i').classList.add('text-gray-400');
             
-            videoBtn.classList.remove('border-vibe-primary', 'bg-vibe-primary/10');
-            videoBtn.querySelector('i').classList.remove('text-vibe-primary');
-            videoBtn.querySelector('i').classList.add('text-gray-400');
+            balancedBtn.classList.remove('border-[#00D4FF]', 'bg-[#00D4FF]/10');
+            balancedBtn.querySelector('i').classList.remove('text-[#00D4FF]');
+            balancedBtn.querySelector('i').classList.add('text-gray-400');
             
-            // Highlight selected mode
-            if (mode === 'text') {
-                textBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
-                textBtn.querySelector('i').classList.remove('text-gray-400');
-                textBtn.querySelector('i').classList.add('text-vibe-primary');
-            } else if (mode === 'video') {
-                videoBtn.classList.add('border-vibe-primary', 'bg-vibe-primary/10');
-                videoBtn.querySelector('i').classList.remove('text-gray-400');
-                videoBtn.querySelector('i').classList.add('text-vibe-primary');
+            // Highlight selected
+            if (speed === 'fast') {
+                fastBtn.classList.add('border-[#00D4FF]', 'bg-[#00D4FF]/10');
+                fastBtn.querySelector('i').classList.remove('text-gray-400');
+                fastBtn.querySelector('i').classList.add('text-[#00D4FF]');
+            } else {
+                balancedBtn.classList.add('border-[#00D4FF]', 'bg-[#00D4FF]/10');
+                balancedBtn.querySelector('i').classList.remove('text-gray-400');
+                balancedBtn.querySelector('i').classList.add('text-[#00D4FF]');
             }
         }
         
-        function startChat() {
-            // Save user settings
+        function startSmartMatching() {
+            // Save settings
             appState.userName = document.getElementById('display-name').value || 'Anonymous';
+            appState.userGender = document.getElementById('gender-select').value;
+            appState.genderPreference = document.getElementById('gender-pref').value;
+            
             const interests = document.getElementById('interests-input').value;
-            appState.userInterests = interests ? interests.split(',').map(i => i.trim()).filter(i => i) : ['chat'];
+            appState.interests = interests ? interests.split(',').map(i => i.trim()).filter(i => i) : ['chat'];
             
             // Update UI
             document.getElementById('user-name').textContent = appState.userName;
+            updateGenderDisplay(appState.userGender);
+            updateGenderPreferenceDisplay(appState.genderPreference);
             updateInterestsTags();
-            
-            // If no mode selected, default to text
-            if (!appState.currentMode) {
-                appState.currentMode = 'text';
-            }
             
             closeSettings();
             
-            // Hide home, show chat
-            homeSection.classList.add('hidden');
-            featuresSection.classList.add('hidden');
-            chatSection.classList.remove('hidden');
+            // Start searching
+            appState.isSearching = true;
+            appState.sessionStart = new Date();
+            appState.messageCount = 0;
             
-            // Show appropriate container
-            if (appState.currentMode === 'video') {
-                videoContainer.classList.remove('hidden');
-                textChatContainer.classList.add('hidden');
-                initializeVideoChat();
+            // Show appropriate chat interface
+            if (window.innerWidth >= 768) {
+                // Desktop
+                homeSection.classList.add('hidden');
+                desktopChatSection.classList.remove('hidden');
+                desktopChatSection.classList.remove('desktop-hidden');
             } else {
-                videoContainer.classList.add('hidden');
-                textChatContainer.classList.remove('hidden');
-                initializeTextChat();
+                // Mobile
+                homeSection.classList.add('hidden');
+                mobileChatSection.classList.remove('hidden');
             }
+            
+            // Clear messages
+            document.getElementById('messages').innerHTML = '';
+            document.getElementById('mobile-messages').innerHTML = '';
+            
+            // Add searching message
+            addMessage('system', 'Searching for compatible partner...');
+            
+            // Start socket connection if not connected
+            if (!socket || !socket.connected) {
+                connectSocket();
+            }
+            
+            // Request match
+            setTimeout(() => {
+                if (socket && socket.connected) {
+                    socket.emit('findMatch', {
+                        userId: appState.userId,
+                        name: appState.userName,
+                        gender: appState.userGender,
+                        genderPreference: appState.genderPreference,
+                        interests: appState.interests,
+                        matchSpeed: appState.matchSpeed
+                    });
+                    
+                    document.getElementById('matching-algo').textContent = 
+                        appState.matchSpeed === 'fast' ? 'Fast Match' : 'Smart Match';
+                } else {
+                    // Simulate match for demo
+                    simulateMatch();
+                }
+            }, 1000);
             
             // Start session timer
-            appState.sessionStart = new Date();
             updateSessionTimer();
-            
-            // Simulate finding a partner
-            setTimeout(() => {
-                connectToPartner();
-            }, 1500);
         }
         
-        function initializeVideoChat() {
-            // Request camera and microphone
-            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-                .then(stream => {
-                    localStream = stream;
-                    const localVideo = document.getElementById('local-video');
-                    if (localVideo) localVideo.srcObject = stream;
-                    
-                    // Hide loading
-                    document.getElementById('video-loading').classList.add('hidden');
-                })
-                .catch(error => {
-                    console.error('Error accessing media devices:', error);
-                    alert('Unable to access camera/microphone. Please check permissions.');
-                    // Fall back to text chat
-                    appState.currentMode = 'text';
-                    videoContainer.classList.add('hidden');
-                    textChatContainer.classList.remove('hidden');
-                });
-        }
-        
-        function initializeTextChat() {
-            // Enable input after "connection"
+        function simulateMatch() {
+            // Simulated matching for demo
             setTimeout(() => {
-                messageInput.disabled = false;
-                sendBtn.disabled = false;
-                messageInput.focus();
-                document.getElementById('chat-status').textContent = 'Connected to stranger';
-                appState.isConnected = true;
+                const simulatedPartner = {
+                    userId: 'partner_' + Math.random().toString(36).substr(2, 9),
+                    name: ['Alex', 'Taylor', 'Jordan', 'Casey', 'Riley'][Math.floor(Math.random() * 5)],
+                    gender: ['male', 'female', 'other'][Math.floor(Math.random() * 3)],
+                    interests: appState.interests.concat(['chatting', 'meeting people'])
+                };
                 
-                // Add welcome message
-                addMessage('system', "You're now connected with a stranger! Say hello to start the conversation.");
+                handleMatchFound(simulatedPartner);
             }, 2000);
-        }
-        
-        function connectToPartner() {
-            if (appState.currentMode === 'video') {
-                document.getElementById('video-loading').classList.add('hidden');
-                appState.isConnected = true;
-                
-                // Simulate partner video (in real app, this would be remote stream)
-                setTimeout(() => {
-                    // Show mock connection message
-                    addMessage('system', "Video call connected. You can now see and hear each other.");
-                }, 500);
-            }
-            
-            appState.partnerCount++;
-            document.getElementById('partner-count').textContent = appState.partnerCount;
-        }
-        
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text || !appState.isConnected) return;
-            
-            addMessage('user', text);
-            messageInput.value = '';
-            
-            // Simulate response after delay
-            if (appState.isConnected) {
-                setTimeout(() => {
-                    const responses = [
-                        "That's interesting! Tell me more.",
-                        "I've never thought about it that way.",
-                        "What do you think about this topic?",
-                        "I agree with you on that point.",
-                        "That reminds me of something similar..."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage('stranger', randomResponse);
-                }, 1000 + Math.random() * 2000);
-            }
-            
-            appState.messageCount++;
-            document.getElementById('message-count').textContent = appState.messageCount;
-        }
-        
-        function addMessage(sender, text) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
-            
-            const bubble = document.createElement('div');
-            bubble.className = sender === 'user' ? 'bubble-user' : 'bubble-stranger';
-            bubble.style.maxWidth = '80%';
-            
-            const messageText = document.createElement('p');
-            messageText.className = 'p-4';
-            messageText.textContent = text;
-            
-            bubble.appendChild(messageText);
-            messageDiv.appendChild(bubble);
-            
-            messagesContainer.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            messagesContainer.parentElement.scrollTop = messagesContainer.parentElement.scrollHeight;
-        }
-        
-        function requestVideoCall() {
-            if (appState.currentMode === 'text') {
-                if (confirm('Switch to video call mode?')) {
-                    appState.currentMode = 'video';
-                    textChatContainer.classList.add('hidden');
-                    videoContainer.classList.remove('hidden');
-                    initializeVideoChat();
-                    connectToPartner();
-                }
-            }
-        }
-        
-        function toggleMute() {
-            if (localStream) {
-                const audioTrack = localStream.getAudioTracks()[0];
-                if (audioTrack) {
-                    appState.isMuted = !audioTrack.enabled;
-                    audioTrack.enabled = !appState.isMuted;
-                    
-                    const btn = document.getElementById('mute-btn');
-                    if (appState.isMuted) {
-                        btn.innerHTML = '<i class="fa-solid fa-microphone-slash text-white"></i>';
-                        btn.classList.add('bg-red-500/30');
-                    } else {
-                        btn.innerHTML = '<i class="fa-solid fa-microphone text-white"></i>';
-                        btn.classList.remove('bg-red-500/30');
-                    }
-                }
-            }
-        }
-        
-        function toggleVideo() {
-            if (localStream) {
-                const videoTrack = localStream.getVideoTracks()[0];
-                if (videoTrack) {
-                    appState.isVideoOff = !videoTrack.enabled;
-                    videoTrack.enabled = !appState.isVideoOff;
-                    
-                    const btn = document.getElementById('video-btn');
-                    if (appState.isVideoOff) {
-                        btn.innerHTML = '<i class="fa-solid fa-video-slash text-white"></i>';
-                        btn.classList.add('bg-red-500/30');
-                    } else {
-                        btn.innerHTML = '<i class="fa-solid fa-video text-white"></i>';
-                        btn.classList.remove('bg-red-500/30');
-                    }
-                }
-            }
-        }
-        
-        function endCall() {
-            if (appState.currentMode === 'video') {
-                document.getElementById('end-title').textContent = 'Video Call Ended';
-                document.getElementById('end-message').textContent = 'Your video connection has been disconnected.';
-            } else {
-                document.getElementById('end-title').textContent = 'Chat Ended';
-                document.getElementById('end-message').textContent = 'Your chat session has ended.';
-            }
-            
-            endChat();
-        }
-        
-        function endChat() {
-            appState.isConnected = false;
-            
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-            
-            endModal.classList.remove('hidden');
-        }
-        
-        function nextPartner() {
-            endModal.classList.add('hidden');
-            appState.messageCount = 0;
-            document.getElementById('message-count').textContent = '0';
-            
-            messagesContainer.innerHTML = '';
-            messageInput.value = '';
-            messageInput.disabled = true;
-            sendBtn.disabled = true;
-            
-            document.getElementById('chat-status').textContent = 'Connecting...';
-            
-            if (appState.currentMode === 'video') {
-                document.getElementById('video-loading').classList.remove('hidden');
-            }
-            
-            setTimeout(() => {
-                connectToPartner();
-                
-                if (appState.currentMode === 'text') {
-                    messageInput.disabled = false;
-                    sendBtn.disabled = false;
-                    messageInput.focus();
-                    document.getElementById('chat-status').textContent = 'Connected to stranger';
-                    appState.isConnected = true;
-                    
-                    addMessage('system', "Connected to a new stranger. Start chatting!");
-                }
-            }, 2000);
-        }
-        
-        function goHome() {
-            endModal.classList.add('hidden');
-            chatSection.classList.add('hidden');
-            homeSection.classList.remove('hidden');
-            
-            // Reset state
-            appState.isConnected = false;
-            appState.messageCount = 0;
-            appState.partnerCount = 0;
-            
-            if (localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-                localStream = null;
-            }
-        }
-        
-        function showFeatures() {
-            featuresSection.classList.remove('hidden');
-            featuresSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function toggleTheme() {
-            const body = document.body;
-            if (body.classList.contains('dark')) {
-                body.classList.remove('dark');
-                body.style.backgroundColor = '#0A0A0F';
-            } else {
-                body.classList.add('dark');
-                body.style.backgroundColor = '#1A1A2E';
-            }
         }
         
         function updateInterestsTags() {
             const container = document.getElementById('interests-tags');
             container.innerHTML = '';
             
-            appState.userInterests.forEach(interest => {
+            appState.interests.forEach(interest => {
                 if (interest.trim()) {
                     const tag = document.createElement('span');
-                    tag.className = 'px-3 py-1 bg-white/5 rounded-full text-xs';
+                    tag.className = 'px-2 py-0.5 md:px-3 md:py-1 bg-white/5 rounded-full text-xs';
                     tag.textContent = `#${interest.trim()}`;
                     container.appendChild(tag);
                 }
             });
         }
         
+        function updateStats() {
+            document.getElementById('message-count').textContent = appState.messageCount;
+            document.getElementById('partner-count').textContent = appState.partnerCount;
+        }
+        
         function updateSessionTimer() {
-            if (appState.sessionStart && appState.isConnected) {
+            if (appState.sessionStart && (appState.isChatting || appState.isSearching)) {
                 const now = new Date();
                 const diff = Math.floor((now - appState.sessionStart) / 1000);
                 const minutes = Math.floor(diff / 60);
@@ -1252,50 +1566,231 @@
             }
         }
         
-        function updateOnlineCount() {
-            // Simulate online count updates
-            setInterval(() => {
-                const count = document.getElementById('online-count');
-                const mobileCount = document.getElementById('mobile-online-count');
-                let current = parseInt(count.textContent.replace(/,/g, '')) || 12845;
-                current += Math.floor(Math.random() * 100) - 50;
-                if (current < 10000) current = 10000 + Math.floor(Math.random() * 5000);
+        function skipPartner() {
+            if (appState.isChatting) {
+                addMessage('system', 'Looking for new partner...');
                 
-                const formatted = current.toLocaleString();
-                count.textContent = formatted;
-                if (mobileCount) mobileCount.textContent = formatted;
-            }, 5000);
+                if (socket && socket.connected) {
+                    socket.emit('skipPartner', { userId: appState.userId });
+                }
+                
+                endChat();
+                setTimeout(() => {
+                    appState.isSearching = true;
+                    appState.partner = null;
+                    appState.messageCount = 0;
+                    updateStats();
+                    
+                    if (socket && socket.connected) {
+                        socket.emit('findMatch', {
+                            userId: appState.userId,
+                            name: appState.userName,
+                            gender: appState.userGender,
+                            genderPreference: appState.genderPreference,
+                            interests: appState.interests,
+                            matchSpeed: appState.matchSpeed
+                        });
+                    } else {
+                        simulateMatch();
+                    }
+                }, 1000);
+            }
         }
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Send message on Enter (but not Shift+Enter)
-            if (e.key === 'Enter' && !e.shiftKey && document.activeElement === messageInput) {
-                e.preventDefault();
-                sendMessage();
-            }
+        function endChat() {
+            appState.isChatting = false;
+            appState.partner = null;
             
-            // Escape to end chat
-            if (e.key === 'Escape' && appState.isConnected) {
-                endChat();
-            }
-        });
+            // Disable inputs
+            const messageInput = document.getElementById('message-input');
+            const mobileMessageInput = document.getElementById('mobile-message-input');
+            const sendBtn = document.getElementById('send-btn');
+            const mobileSendBtn = document.getElementById('mobile-send-btn');
+            
+            if (messageInput) messageInput.disabled = true;
+            if (mobileMessageInput) mobileMessageInput.disabled = true;
+            if (sendBtn) sendBtn.disabled = true;
+            if (mobileSendBtn) mobileSendBtn.disabled = true;
+            
+            // Show end message
+            addMessage('system', 'Chat ended. Searching for new partner...');
+        }
         
-        // Initialize
+        function closeMobileChat() {
+            mobileChatSection.classList.add('hidden');
+            homeSection.classList.remove('hidden');
+            endChat();
+        }
+        
+        function closeFileModal() {
+            document.getElementById('file-modal').classList.add('hidden');
+            removeFile();
+        }
+        
+        function openServerInfo() {
+            serverInfoModal.classList.remove('hidden');
+        }
+        
+        function closeServerInfo() {
+            serverInfoModal.classList.add('hidden');
+        }
+        
+        function reconnectServer() {
+            if (socket) {
+                socket.disconnect();
+            }
+            connectSocket();
+            closeServerInfo();
+        }
+        
+        function disconnectServer() {
+            if (socket) {
+                socket.disconnect();
+                updateServerStatus('Disconnected', 'red-400');
+            }
+            closeServerInfo();
+        }
+        
+        function retryConnection() {
+            if (socket) {
+                socket.disconnect();
+            }
+            connectSocket();
+        }
+        
+        function changeGenderPref() {
+            const currentPref = appState.genderPreference;
+            const prefs = ['any', 'male', 'female', 'same', 'opposite'];
+            const currentIndex = prefs.indexOf(currentPref);
+            const nextIndex = (currentIndex + 1) % prefs.length;
+            
+            appState.genderPreference = prefs[nextIndex];
+            updateGenderPreferenceDisplay(appState.genderPreference);
+            
+            if (appState.isChatting) {
+                addMessage('system', `Changed gender preference to: ${appState.genderPreference}`);
+            }
+            
+            // Show notification
+            showNotification(`Gender preference updated to: ${appState.genderPreference}`);
+        }
+        
+        function showNotification(message) {
+            // Create temporary notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 z-50 glass-card px-4 py-3 rounded-xl animate-slide-up';
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-green-400"></i>
+                    <span class="text-sm">${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // --- ERROR HANDLING ---
+        function handleDisconnect(reason) {
+            isConnected = false;
+            updateServerStatus('Disconnected', 'red-400');
+            document.getElementById('server-status').textContent = `Disconnected: ${reason}`;
+            
+            if (appState.isChatting) {
+                addMessage('system', 'Disconnected from server. Trying to reconnect...');
+            }
+        }
+        
+        function handleConnectionError(error) {
+            console.error('Connection error:', error);
+            document.getElementById('server-status').textContent = `Connection failed: ${error.message}`;
+            reconnectAttempts++;
+            
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                document.getElementById('server-status').textContent = 'Failed to connect. Please check your internet.';
+            }
+        }
+        
+        function handlePartnerDisconnect() {
+            if (appState.isChatting) {
+                addMessage('system', 'Partner disconnected. Searching for new match...');
+                endChat();
+                setTimeout(() => {
+                    skipPartner();
+                }, 2000);
+            }
+        }
+        
+        // --- INITIALIZATION ---
         window.addEventListener('DOMContentLoaded', function() {
-            // Check Firebase config
-            initFirebase();
+            // Generate initial user ID
+            appState.userId = generateId();
             
-            // Default to text mode
-            selectMode('text');
+            // Update initial displays
+            updateGenderDisplay(appState.userGender);
+            updateGenderPreferenceDisplay(appState.genderPreference);
+            updateInterestsTags();
             
-            // Update online count
-            updateOnlineCount();
+            // Auto-resize textareas
+            const messageInput = document.getElementById('message-input');
+            const mobileMessageInput = document.getElementById('mobile-message-input');
             
-            // Auto-resize textarea
-            messageInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
+            if (messageInput) {
+                messageInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+            
+            if (mobileMessageInput) {
+                mobileMessageInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+            
+            // Connect to server
+            connectSocket();
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Send message on Enter (but not Shift+Enter)
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    const activeElement = document.activeElement;
+                    if (activeElement === messageInput || activeElement === mobileMessageInput) {
+                        e.preventDefault();
+                        if (window.innerWidth >= 768) {
+                            sendMessage();
+                        } else {
+                            sendMobileMessage();
+                        }
+                    }
+                }
+                
+                // Escape to end chat
+                if (e.key === 'Escape' && appState.isChatting) {
+                    endChat();
+                }
+            });
+            
+            // Handle window resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    // Adjust UI based on screen size
+                    if (window.innerWidth < 768 && appState.isChatting) {
+                        desktopChatSection.classList.add('hidden');
+                        mobileChatSection.classList.remove('hidden');
+                    } else if (window.innerWidth >= 768 && appState.isChatting) {
+                        mobileChatSection.classList.add('hidden');
+                        desktopChatSection.classList.remove('hidden');
+                        desktopChatSection.classList.remove('desktop-hidden');
+                    }
+                }, 250);
             });
         });
     </script>
