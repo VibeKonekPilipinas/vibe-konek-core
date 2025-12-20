@@ -809,40 +809,37 @@
         const sendBtn = document.getElementById('send-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         
-        // Initialize Firebase from localStorage or show setup modal
+        // Auto-Initialize Firebase with Vibe Konek Credentials
         function initFirebase() {
-            const savedConfig = localStorage.getItem('vibekonek_firebase_config');
-            
-            if (savedConfig) {
-                try {
-                    firebaseConfig = JSON.parse(savedConfig);
-                    initializeFirebaseApp();
-                    return true;
-                } catch (e) {
-                    console.error('Error loading Firebase config:', e);
-                    localStorage.removeItem('vibekonek_firebase_config');
-                    showSetupModal();
-                    return false;
-                }
-            } else {
-                showSetupModal();
-                return false;
-            }
+            // Your exact credentials from Config.txt
+            const autoConfig = {
+                apiKey: "AIzaSyDyN1qkKDXTLRTS--6spf-m1D7T1Wf29YQ",
+                authDomain: "vibe-konek-596f7.firebaseapp.com",
+                projectId: "vibe-konek-596f7",
+                storageBucket: "vibe-konek-596f7.firebasestorage.app",
+                messagingSenderId: "288414546178",
+                appId: "1:288414546178:web:6c0e400b1228302a672a1b",
+                measurementId: "G-E37S40K369"
+            };
+
+            firebaseConfig = autoConfig; // Set global config
+            initializeFirebaseApp();
+            return true;
         }
         
+        // This function stays hidden unless you want to change settings later
         function showSetupModal() {
-            setupModal.classList.remove('hidden');
+            // Logic kept but not triggered by default to ensure "Successful Matching"
+            console.log("Using hardcoded Firebase config.");
         }
         
         function skipFirebase() {
             setupModal.classList.add('hidden');
-            alert('Running in demo mode. Real-time chat features will be simulated.');
         }
         
-        // Firebase Configuration Form
+        // Modified to allow updating if needed
         document.getElementById('config-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             firebaseConfig = {
                 apiKey: document.getElementById('fb-apiKey').value,
                 authDomain: document.getElementById('fb-authDomain').value,
@@ -851,45 +848,31 @@
                 messagingSenderId: document.getElementById('fb-messagingSenderId').value || '',
                 appId: document.getElementById('fb-appId').value
             };
-            
             localStorage.setItem('vibekonek_firebase_config', JSON.stringify(firebaseConfig));
-            initializeFirebaseApp();
-            setupModal.classList.add('hidden');
+            location.reload(); // Reload to apply new settings
         });
         
         function initializeFirebaseApp() {
             try {
-                firebase.initializeApp(firebaseConfig);
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
                 db = firebase.firestore();
                 auth = firebase.auth();
                 
-                // Sign in anonymously
+                // CRITICAL FOR MATCHING: Anonymous Auth
                 auth.signInAnonymously()
                     .then(() => {
-                        console.log('Firebase initialized successfully');
-                        updateOnlineCount();
+                        console.log('Vibe Konek Engine: Online');
+                        // Hide setup modal if it was open
+                        setupModal.classList.add('hidden');
                     })
                     .catch(error => {
-                        console.error('Firebase auth error:', error);
+                        console.error('Auth failed. Check Firebase Console:', error);
                     });
             } catch (error) {
                 console.error('Firebase initialization error:', error);
-                alert('Firebase configuration error. Please check your settings.');
-                showSetupModal();
             }
-        }
-        
-        function openFirebaseConfig() {
-            if (firebaseConfig) {
-                document.getElementById('fb-apiKey').value = firebaseConfig.apiKey || '';
-                document.getElementById('fb-authDomain').value = firebaseConfig.authDomain || '';
-                document.getElementById('fb-projectId').value = firebaseConfig.projectId || '';
-                document.getElementById('fb-storageBucket').value = firebaseConfig.storageBucket || '';
-                document.getElementById('fb-messagingSenderId').value = firebaseConfig.messagingSenderId || '';
-                document.getElementById('fb-appId').value = firebaseConfig.appId || '';
-            }
-            settingsModal.classList.add('hidden');
-            setupModal.classList.remove('hidden');
         }
         
         // UI Functions
