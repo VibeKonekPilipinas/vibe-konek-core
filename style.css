@@ -1,0 +1,415 @@
+/* Custom Styles */
+body {
+    background-color: #0A0A0F;
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+body.dark {
+    background-color: #1A1A2E;
+}
+
+/* Liquid Glass Effects */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.glass-intense {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(90deg, #00D4FF, #9D4EDD, #FF2E63);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% auto;
+    animation: gradientXY 4s ease infinite;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #00D4FF, #9D4EDD);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #00D4FF, #FF2E63);
+}
+
+/* Chat Bubbles */
+.bubble-user {
+    background: linear-gradient(135deg, #00D4FF, #0099FF);
+    color: white;
+    border-radius: 20px 20px 4px 20px;
+    max-width: 70%;
+    word-wrap: break-word;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.bubble-stranger {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 20px 20px 20px 4px;
+    max-width: 70%;
+    word-wrap: break-word;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideInLeft 0.3s ease-out;
+}
+
+.bubble-system {
+    background: rgba(255, 255, 255, 0.05);
+    color: #9CA3AF;
+    border-radius: 12px;
+    max-width: 90%;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 0.875rem;
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Animations for chat bubbles */
+@keyframes slideInRight {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Video Container */
+.video-container {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #000;
+}
+
+.video-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Loading Animation */
+.loading-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00D4FF;
+    margin: 0 4px;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+/* Liquid Background */
+.liquid-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.liquid-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: liquidFlow 20s ease-in-out infinite;
+}
+
+/* Button Effects */
+.btn-primary {
+    background: linear-gradient(135deg, #00D4FF, #0099FF);
+    color: white;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #374151;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #00D4FF;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+/* Message Timestamp */
+.message-timestamp {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* Connection Status Indicators */
+.status-connected {
+    background-color: #10B981;
+    animation: pulseGlow 2s infinite;
+}
+
+.status-connecting {
+    background-color: #F59E0B;
+    animation: pulseGlow 1s infinite;
+}
+
+.status-disconnected {
+    background-color: #EF4444;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .glass-card, .glass-intense {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+    }
+    
+    .mobile-full {
+        width: 100vw;
+        margin-left: -1rem;
+        margin-right: -1rem;
+    }
+    
+    .bubble-user, .bubble-stranger {
+        max-width: 85%;
+    }
+    
+    #chat-interface .glass-intense {
+        margin: 1rem;
+        border-radius: 20px;
+    }
+    
+    #text-chat-container .lg\\:col-span-1 {
+        display: none;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 640px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    .glass-card {
+        padding: 1rem;
+    }
+    
+    .video-container .absolute {
+        bottom: 1rem;
+        right: 1rem;
+        width: 100px;
+        height: 75px;
+    }
+}
+
+/* Fix for scroll in messages container */
+#messages-container {
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+}
+
+/* Fix for textarea resizing */
+textarea {
+    min-height: 44px;
+    max-height: 120px;
+}
+
+/* Gender badges */
+.gender-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.gender-male {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60A5FA;
+}
+
+.gender-female {
+    background: rgba(236, 72, 153, 0.2);
+    color: #F472B6;
+}
+
+.gender-other {
+    background: rgba(139, 92, 246, 0.2);
+    color: #A78BFA;
+}
+
+/* Interest tags */
+.interest-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    font-size: 0.75rem;
+    margin: 2px;
+    transition: all 0.2s ease;
+}
+
+.interest-tag:hover {
+    background: rgba(0, 212, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Connection toast animations */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Video loading overlay */
+#video-loading {
+    z-index: 10;
+}
+
+/* Fix for iOS video */
+video {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* Prevent text selection on buttons */
+button {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
